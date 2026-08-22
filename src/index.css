@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #c05621;
+  --color-brand-secondary: #1a202c;
+  --color-brand-background: #fcfbf9;
+  --color-brand-surface: #ffffff;
+  --color-brand-text: #2d3748;
+  --color-brand-muted: #718096;
+  --color-brand-border: #e2e8f0;
+  
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-card-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+@layer base {
+  body {
+    background-color: var(--color-brand-background);
+    color: var(--color-brand-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  .btn:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-brand-primary);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  
+  .btn-primary {
+    background-color: var(--color-brand-primary);
+    color: white;
+  }
+  .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--color-brand-primary) 90%, transparent);
+  }
+  
+  .btn-secondary {
+    background-color: var(--color-brand-secondary);
+    color: white;
+  }
+  .btn-secondary:hover {
+    background-color: color-mix(in srgb, var(--color-brand-secondary) 90%, transparent);
+  }
+  
+  .btn-outline {
+    border: 1px solid var(--color-brand-border);
+    background-color: transparent;
+    color: var(--color-brand-text);
+  }
+  .btn-outline:hover {
+    background-color: var(--color-brand-surface);
+  }
+}
