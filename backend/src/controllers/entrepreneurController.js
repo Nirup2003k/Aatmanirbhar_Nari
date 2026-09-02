@@ -295,10 +295,56 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 
+const updateVerificationDetails = async (req, res, next) => {
+  try {
+    const { verificationDetails } = req.body;
+
+    if (!verificationDetails || !verificationDetails.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification details are required.',
+      });
+    }
+
+    const business = await prisma.business.findFirst({
+      where: { ownerId: req.user.id },
+    });
+
+    if (!business) {
+      return res.status(404).json({
+        success: false,
+        message: 'No registered business found for your account.',
+      });
+    }
+
+    const updated = await prisma.business.update({
+      where: { id: business.id },
+      data: {
+        verificationDetails: verificationDetails.trim(),
+        verificationStatus: 'PENDING',
+        verificationReason: null,
+      },
+      include: {
+        services: true,
+        availability: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Verification details updated and submitted for admin review.',
+      data: updated,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getEntrepreneurBusinesses,
   getEntrepreneurInquiries,
   getEntrepreneurOrders,
   getEntrepreneurOrderById,
   updateOrderStatus,
+  updateVerificationDetails,
 };

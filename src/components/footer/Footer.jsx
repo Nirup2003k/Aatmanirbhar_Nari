@@ -62,10 +62,10 @@ const Footer = () => {
               {isEntrepreneur && (
                 <>
                   <li>
-                    <Link to="/entrepreneur/dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">My Business</Link>
+                    <Link to="/entrepreneur/dashboard?tab=details" className="text-sm text-gray-400 hover:text-white transition-colors">My Business</Link>
                   </li>
                   <li>
-                    <Link to="/entrepreneur/dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">Manage Orders</Link>
+                    <Link to="/entrepreneur/dashboard?tab=orders" className="text-sm text-gray-400 hover:text-white transition-colors">Manage Orders</Link>
                   </li>
                 </>
               )}
@@ -74,22 +74,36 @@ const Footer = () => {
                   <Link to="/admin/dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">Admin Dashboard</Link>
                 </li>
               )}
-              <li>
-                <Link to="/learning" className="text-sm text-gray-400 hover:text-white transition-colors">Learning</Link>
-              </li>
+              {!isCustomer && !isAdmin && (
+                <li>
+                  <Link to="/learning" className="text-sm text-gray-400 hover:text-white transition-colors">Learning</Link>
+                </li>
+              )}
               <li>
                 <Link to="/about" className="text-sm text-gray-400 hover:text-white transition-colors">About Us</Link>
               </li>
             </ul>
           </div>
 
-          {/* For Entrepreneurs / Community */}
+          {/* For Entrepreneurs / Customer / Admin Column */}
           <div>
             <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">
-              {isEntrepreneur ? 'Entrepreneur Hub' : isAdmin ? 'Admin Management' : 'For Entrepreneurs'}
+              {isCustomer ? 'Customer Links' : isEntrepreneur ? 'Entrepreneur Hub' : isAdmin ? 'Admin Management' : 'For Entrepreneurs'}
             </h3>
             <ul className="space-y-3">
-              {isEntrepreneur ? (
+              {isCustomer ? (
+                <>
+                  <li>
+                    <Link to="/orders" className="text-sm text-gray-400 hover:text-white transition-colors">Track My Orders</Link>
+                  </li>
+                  <li>
+                    <Link to="/businesses" className="text-sm text-gray-400 hover:text-white transition-colors">Explore Local Directory</Link>
+                  </li>
+                  <li>
+                    <Link to="/about" className="text-sm text-gray-400 hover:text-white transition-colors">About Aatmanirbhar Nari</Link>
+                  </li>
+                </>
+              ) : isEntrepreneur ? (
                 <>
                   <li>
                     <Link to="/entrepreneur/dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">My Business Dashboard</Link>
@@ -107,7 +121,7 @@ const Footer = () => {
                     <Link to="/admin/dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">Admin Portal</Link>
                   </li>
                   <li>
-                    <Link to="/learning" className="text-sm text-gray-400 hover:text-white transition-colors">Resource Hub</Link>
+                    <Link to="/businesses" className="text-sm text-gray-400 hover:text-white transition-colors">Business Directory</Link>
                   </li>
                 </>
               ) : (

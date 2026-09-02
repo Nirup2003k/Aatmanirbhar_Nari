@@ -13,6 +13,7 @@ import About from './pages/About/About';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import EntrepreneurDashboard from './pages/Entrepreneur/EntrepreneurDashboard';
+import AdminDashboard from './pages/Admin/AdminDashboard';
 import Checkout from './pages/Orders/Checkout';
 import MyOrders from './pages/Orders/MyOrders';
 import OrderDetails from './pages/Orders/OrderDetails';
@@ -99,6 +100,14 @@ const App = () => {
                   element={
                     <ProtectedRoute allowedRoles={['ENTREPRENEUR']}>
                       <EntrepreneurDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN']}>
+                      <AdminDashboard />
                     </ProtectedRoute>
                   }
                 />

@@ -63,9 +63,12 @@ const Navbar = () => {
   const getSecondaryLinks = () => {
     const defaultPublic = [
       { name: 'How It Works', path: '/#how-it-works', icon: HelpCircle },
-      { name: 'Learning', path: '/learning', icon: BookOpen },
       { name: 'About', path: '/about', icon: Info },
     ];
+
+    if (isGuest || isEntrepreneur) {
+      defaultPublic.splice(1, 0, { name: 'Learning', path: '/learning', icon: BookOpen });
+    }
 
     if (isAuthenticated) {
       return [

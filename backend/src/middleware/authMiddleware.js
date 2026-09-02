@@ -5,7 +5,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'aatmanirbhar_nari_jwt_secret_key_2
 
 const authenticateToken = async (req, res, next) => {
   try {
-    const token = req.cookies?.auth_token;
+    let token = req.cookies?.auth_token;
+
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
 
     if (!token) {
       return res.status(401).json({
@@ -49,6 +53,40 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
+const optionalAuth = async (req, res, next) => {
+  try {
+    let token = req.cookies?.auth_token;
+
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.id },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            role: true,
+          },
+        });
+        if (user) {
+          req.user = user;
+        }
+      } catch {
+        // Ignore invalid token in optionalAuth
+      }
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -76,6 +114,7 @@ const verifyOwnership = (ownerId, reqUser) => {
 
 module.exports = {
   authenticateToken,
+  optionalAuth,
   authorizeRoles,
   verifyOwnership,
 };

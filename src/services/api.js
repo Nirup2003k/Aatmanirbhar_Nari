@@ -1,11 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import { CATEGORY_MAP } from '../constants/categories';
 
-const CATEGORY_MAP = {
-  '1': 'Tiffin Services',
-  '2': 'Tailoring & Boutique',
-  '3': 'Beauty Services',
-  '4': 'Handicrafts & Decor',
-};
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 /**
  * Fetch list of businesses from backend with search and filter parameters
@@ -557,4 +552,238 @@ export async function cancelOrder(id) {
   return data.data;
 }
 
+/**
+ * Fetch platform overview statistics for admin
+ */
+export async function getAdminStats() {
+  const url = `${API_BASE_URL}/admin/stats`;
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
 
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || `Failed to fetch admin stats (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data;
+}
+
+/**
+ * Fetch platform users for admin
+ * @param {string} [role] Optional role filter (CUSTOMER, ENTREPRENEUR, ADMIN)
+ */
+export async function getAdminUsers(role) {
+  const queryParams = new URLSearchParams();
+  if (role && role !== 'ALL') {
+    queryParams.set('role', role);
+  }
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/admin/users${queryString ? `?${queryString}` : ''}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || `Failed to fetch admin users (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data || [];
+}
+
+/**
+ * Fetch all platform businesses for admin
+ */
+export async function getAdminBusinesses() {
+  const url = `${API_BASE_URL}/admin/businesses`;
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || `Failed to fetch admin businesses (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data || [];
+}
+
+/**
+ * Fetch platform orders for admin
+ * @param {string} [status] Optional status filter
+ */
+export async function getAdminOrders(status) {
+  const queryParams = new URLSearchParams();
+  if (status && status !== 'ALL') {
+    queryParams.set('status', status);
+  }
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/admin/orders${queryString ? `?${queryString}` : ''}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || `Failed to fetch admin orders (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data || [];
+}
+
+/**
+ * Fetch platform inquiries for admin
+ * @param {string} [status] Optional status filter
+ */
+export async function getAdminInquiries(status) {
+  const queryParams = new URLSearchParams();
+  if (status && status !== 'ALL') {
+    queryParams.set('status', status);
+  }
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/admin/inquiries${queryString ? `?${queryString}` : ''}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || `Failed to fetch admin inquiries (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data || [];
+}
+
+/**
+ * Update and resubmit business verification details for entrepreneur
+ * @param {string} verificationDetails
+ */
+export async function resubmitVerificationDetails(verificationDetails) {
+  const response = await fetch(`${API_BASE_URL}/entrepreneur/business/verification`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ verificationDetails }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to submit verification details.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Fetch business verifications list for admin
+ * @param {Object} params - { status }
+ */
+export async function getBusinessVerifications(params = {}) {
+  const queryParams = new URLSearchParams();
+  if (params.status && params.status !== 'ALL') {
+    queryParams.set('status', params.status);
+  }
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/admin/business-verifications${queryString ? `?${queryString}` : ''}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || `Failed to fetch business verifications (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Fetch specific business verification profile for admin
+ * @param {number|string} id
+ */
+export async function getBusinessVerificationById(id) {
+  const response = await fetch(`${API_BASE_URL}/admin/business-verifications/${id}`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || `Failed to fetch business verification details (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data;
+}
+
+/**
+ * Approve business verification
+ * @param {number|string} id
+ * @param {string} [verificationReason]
+ */
+export async function approveBusinessVerification(id, verificationReason = '') {
+  const response = await fetch(`${API_BASE_URL}/admin/business-verifications/${id}/approve`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ verificationReason }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to approve business.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Reject business verification
+ * @param {number|string} id
+ * @param {string} rejectionReason
+ */
+export async function rejectBusinessVerification(id, rejectionReason) {
+  const response = await fetch(`${API_BASE_URL}/admin/business-verifications/${id}/reject`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ rejectionReason }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to reject business.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}

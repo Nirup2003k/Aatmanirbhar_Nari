@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Clock, Tag } from 'lucide-react';
+import { MapPin, Clock, Tag, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '../common/Button';
 
@@ -12,6 +12,8 @@ const BusinessCard = ({ business }) => {
     ? (isAvailable ? 'Available' : 'By appointment')
     : (business.availability || 'Available today');
 
+  const isVerified = business.verificationStatus === 'APPROVED';
+
   return (
     <div className="group bg-brand-surface border border-brand-border rounded-xl overflow-hidden shadow-sm hover:shadow-card-hover transition-all duration-300 flex flex-col h-full">
       {/* Cleaner Image Placeholder */}
@@ -22,7 +24,7 @@ const BusinessCard = ({ business }) => {
           </svg>
         </div>
         <span className="text-brand-muted/60 text-xs font-medium uppercase tracking-widest">Business Preview</span>
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 flex items-center gap-2">
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isAvailable ? 'bg-green-100 text-green-800' : 'bg-brand-surface text-brand-text border border-brand-border'}`}>
             {isAvailable ? 'Available' : 'Busy'}
           </span>
@@ -30,10 +32,18 @@ const BusinessCard = ({ business }) => {
       </div>
       
       <div className="p-5 flex flex-col flex-grow">
-        <div className="mb-2">
-          <span className="text-xs font-medium text-brand-primary uppercase tracking-wider">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <span className="text-xs font-medium text-brand-primary uppercase tracking-wider truncate">
             {business.category}
           </span>
+          {isVerified && (
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 flex-shrink-0"
+              title="Platform Verified: Identity and business details verified by Aatmanirbhar Nari team"
+            >
+              <ShieldCheck className="w-3 h-3 mr-1 text-emerald-600" /> Platform Verified
+            </span>
+          )}
         </div>
         
         <h3 className="text-lg font-bold text-brand-secondary mb-2 line-clamp-1">

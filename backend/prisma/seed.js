@@ -292,7 +292,7 @@ async function main() {
   // 1. Seed Development ADMIN User
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@aatmanirbharnari.com' },
-    update: {},
+    update: { passwordHash: adminHash },
     create: {
       name: 'System Admin',
       email: 'admin@aatmanirbharnari.com',
@@ -306,7 +306,7 @@ async function main() {
   // 2. Seed Development CUSTOMER User
   const customerUser = await prisma.user.upsert({
     where: { email: 'customer@aatmanirbharnari.com' },
-    update: {},
+    update: { passwordHash: customerHash },
     create: {
       name: 'Demo Customer',
       email: 'customer@aatmanirbharnari.com',
@@ -358,6 +358,9 @@ async function main() {
         where: { id: existingBusiness.id },
         data: {
           ownerId: entrepreneurUser.id,
+          verificationStatus: 'APPROVED',
+          verifiedAt: new Date(),
+          verificationDetails: 'Verified platform micro-enterprise.',
         },
       });
       console.log(`Updated existing business ID ${existingBusiness.id} (${existingBusiness.businessName}) -> ownerId: ${entrepreneurUser.id}`);
@@ -368,6 +371,9 @@ async function main() {
         data: {
           ...businessDetails,
           ownerId: entrepreneurUser.id,
+          verificationStatus: 'APPROVED',
+          verifiedAt: new Date(),
+          verificationDetails: 'Verified platform micro-enterprise.',
           services: {
             create: services,
           },

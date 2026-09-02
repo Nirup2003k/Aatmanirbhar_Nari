@@ -1,31 +1,6 @@
-// Mock data for Aatmanirbhar Nari Frontend
+import { OFFICIAL_CATEGORIES } from '../constants/categories';
 
-export const categories = [
-  {
-    id: 1,
-    name: "Tiffin Services",
-    description: "Homemade, healthy, and hygienic daily meals delivered to you.",
-    icon: "ChefHat",
-  },
-  {
-    id: 2,
-    name: "Tailoring & Boutique",
-    description: "Custom stitching, alterations, and beautiful ethnic wear.",
-    icon: "Scissors",
-  },
-  {
-    id: 3,
-    name: "Beauty Services",
-    description: "Professional salon services from the comfort of your home.",
-    icon: "Sparkles",
-  },
-  {
-    id: 4,
-    name: "Handicrafts & Decor",
-    description: "Unique handmade decor, gifts, and traditional art pieces.",
-    icon: "Palette",
-  },
-];
+export const categories = OFFICIAL_CATEGORIES;
 
 const defaultWeeklyHours = [
   { day: "Monday", isAvailable: true, startTime: "09:00 AM", endTime: "07:00 PM" },

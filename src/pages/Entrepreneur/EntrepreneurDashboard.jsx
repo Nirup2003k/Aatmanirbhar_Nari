@@ -29,21 +29,15 @@ import {
   updateService,
   updateAvailability,
   getEntrepreneurInquiries,
+  updateInquiryStatus,
   getEntrepreneurOrders,
   updateEntrepreneurOrderStatus,
+  resubmitVerificationDetails,
 } from '../../services/api';
+import { CATEGORY_NAMES as CATEGORIES } from '../../constants/categories';
+import { getCategoryGuidance } from '../../constants/verificationGuidance';
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-const CATEGORIES = [
-  'Tiffin Services',
-  'Tailoring & Boutique',
-  'Beauty Services',
-  'Handicrafts & Decor',
-  'Catering & Food',
-  'Education & Tutoring',
-  'Other Services',
-];
 
 const EntrepreneurDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -92,7 +86,11 @@ const EntrepreneurDashboard = () => {
     location: '',
     serviceArea: '',
     pricingRange: '',
+    verificationDetails: '',
   });
+
+  const [resubmitDetails, setResubmitDetails] = useState('');
+  const [isResubmitting, setIsResubmitting] = useState(false);
 
   // Service modal state
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
@@ -226,9 +224,29 @@ const EntrepreneurDashboard = () => {
       const created = await createBusiness(newBusinessForm);
       setBusiness(created);
       setIsRegisterModalOpen(false);
-      showSuccessNotice('Business registered successfully! You can now add services.');
+      showSuccessNotice('Business registered successfully! Submitted for admin verification.');
     } catch (err) {
       showErrorNotice(err.message || 'Failed to register business.');
+    }
+  };
+
+  const handleResubmitVerification = async () => {
+    if (!resubmitDetails.trim()) return;
+    setIsResubmitting(true);
+    setActionError('');
+    setActionSuccess('');
+
+    try {
+      const res = await resubmitVerificationDetails(resubmitDetails.trim());
+      if (res.data) {
+        setBusiness(res.data);
+      }
+      showSuccessNotice('Verification details resubmitted for admin review!');
+      setResubmitDetails('');
+    } catch (err) {
+      showErrorNotice(err.message || 'Failed to resubmit verification details.');
+    } finally {
+      setIsResubmitting(false);
     }
   };
 
@@ -666,6 +684,95 @@ const EntrepreneurDashboard = () => {
                     <p className="text-xs text-brand-muted">Update public profile and coverage information for your business.</p>
                   </div>
                   <span className="text-xs font-mono text-brand-muted">ID: {business.id}</span>
+                </div>
+
+                {/* VERIFICATION STATUS CARD */}
+                <div className="mb-8">
+                  {(!business.verificationStatus || business.verificationStatus === 'APPROVED') && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 shadow-sm flex items-start space-x-4">
+                      <div className="bg-emerald-100 text-emerald-700 p-2.5 rounded-xl flex-shrink-0">
+                        <CheckCircle className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-bold text-emerald-900 text-base">Business Verified</h3>
+                          <span className="bg-emerald-200 text-emerald-800 text-xs font-semibold px-2 py-0.5 rounded-md uppercase">Approved</span>
+                        </div>
+                        <p className="text-xs text-emerald-800 mt-1">
+                          Your business has been verified by the Aatmanirbhar Nari team. Your micro-enterprise is publicly listed in the business directory and discoverable by customers.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {business.verificationStatus === 'PENDING' && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 shadow-sm flex items-start space-x-4">
+                      <div className="bg-amber-100 text-amber-700 p-2.5 rounded-xl flex-shrink-0">
+                        <Clock className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-bold text-amber-900 text-base">Verification Pending</h3>
+                          <span className="bg-amber-200 text-amber-800 text-xs font-semibold px-2 py-0.5 rounded-md uppercase">Under Review</span>
+                        </div>
+                        <p className="text-xs text-amber-800 mt-1">
+                          Your business profile is awaiting verification by our Admin team. Once approved, your business will automatically appear in public search results and listings.
+                        </p>
+                        {business.verificationDetails && (
+                          <div className="mt-3 bg-white/80 border border-amber-200 rounded-lg p-3 text-xs text-amber-900">
+                            <span className="font-bold block mb-0.5">Submitted Verification Proof / Details:</span>
+                            <p className="whitespace-pre-wrap text-amber-800">{business.verificationDetails}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {business.verificationStatus === 'REJECTED' && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-5 shadow-sm flex items-start space-x-4">
+                      <div className="bg-red-100 text-red-700 p-2.5 rounded-xl flex-shrink-0">
+                        <XCircle className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-bold text-red-900 text-base">Verification Rejected</h3>
+                          <span className="bg-red-200 text-red-800 text-xs font-semibold px-2 py-0.5 rounded-md uppercase">Action Required</span>
+                        </div>
+                        <p className="text-xs text-red-800 mt-1">
+                          Your business verification was not approved. Please review the reason below, update your details, and resubmit for admin review.
+                        </p>
+
+                        {business.verificationReason && (
+                          <div className="mt-3 bg-red-100/60 border border-red-200 rounded-lg p-3 text-xs text-red-900">
+                            <span className="font-bold block mb-0.5">Admin Rejection Reason:</span>
+                            <p className="whitespace-pre-wrap">{business.verificationReason}</p>
+                          </div>
+                        )}
+
+                        {/* RESUBMISSION FORM */}
+                        <div className="mt-4 pt-4 border-t border-red-200">
+                          <h4 className="text-xs font-bold text-red-900 uppercase tracking-wider mb-2">
+                            Resubmit Verification Proof & Details
+                          </h4>
+                          <textarea
+                            rows={3}
+                            value={resubmitDetails}
+                            onChange={(e) => setResubmitDetails(e.target.value)}
+                            placeholder="Provide updated business details, location info, experience, or registration proof..."
+                            className="w-full bg-white border border-red-300 rounded-lg p-3 text-xs text-brand-secondary focus:outline-none focus:ring-2 focus:ring-red-400 mb-3"
+                          />
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            disabled={isResubmitting || !resubmitDetails.trim()}
+                            onClick={handleResubmitVerification}
+                          >
+                            {isResubmitting ? 'Submitting...' : 'Resubmit For Verification'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <form onSubmit={handleUpdateBusinessSubmit} className="space-y-6">
@@ -1284,6 +1391,39 @@ const EntrepreneurDashboard = () => {
                     onChange={(e) => setNewBusinessForm({ ...newBusinessForm, description: e.target.value })}
                     className="w-full bg-brand-background border border-brand-border rounded-lg p-3 text-sm text-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
                   />
+                </div>
+
+                {/* VERIFICATION PROOF & DETAILS */}
+                <div className="pt-2">
+                  <div className="bg-brand-background/70 border border-brand-border/80 rounded-xl p-4 mb-3">
+                    <h4 className="text-xs font-bold text-brand-secondary uppercase tracking-wider mb-2 flex items-center">
+                      <Clock className="w-4 h-4 text-brand-primary mr-1.5" />
+                      {getCategoryGuidance(newBusinessForm.category).title}
+                    </h4>
+                    <p className="text-xs text-brand-muted mb-2">
+                      Please provide details to help our Admin team verify your business:
+                    </p>
+                    <ul className="list-disc list-inside text-xs text-brand-text/90 space-y-1 mb-2">
+                      {getCategoryGuidance(newBusinessForm.category).prompts.map((prompt, pIdx) => (
+                        <li key={pIdx}>{prompt}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <label className="block text-xs font-bold text-brand-secondary uppercase mb-1">
+                    Verification Details / Proof *
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder={getCategoryGuidance(newBusinessForm.category).placeholder}
+                    value={newBusinessForm.verificationDetails}
+                    onChange={(e) => setNewBusinessForm({ ...newBusinessForm, verificationDetails: e.target.value })}
+                    className="w-full bg-brand-background border border-brand-border rounded-lg p-3 text-sm text-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+                  />
+                  <p className="text-[11px] text-brand-muted mt-1">
+                    Your business will be submitted to the Admin team for review. It will become publicly visible once approved.
+                  </p>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-3 border-t border-brand-border">

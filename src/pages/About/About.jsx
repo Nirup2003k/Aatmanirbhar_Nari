@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShieldCheck, Users, Sparkles, ChevronDown, ChevronUp, ArrowRight, Award, MapPin, Target } from 'lucide-react';
 import Button from '../../components/common/Button';
+import { useAuth } from '../../context/AuthContext';
 
 const FAQS = [
   {
@@ -28,10 +29,58 @@ const FAQS = [
 
 const About = () => {
   const [openFaq, setOpenFaq] = useState(0);
+  const { user, isAuthenticated } = useAuth();
+
+  const isCustomer = isAuthenticated && user?.role === 'CUSTOMER';
+  const isEntrepreneur = isAuthenticated && user?.role === 'ENTREPRENEUR';
+  const isAdmin = isAuthenticated && user?.role === 'ADMIN';
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
   };
+
+  const getCtaContent = () => {
+    if (isCustomer) {
+      return {
+        heading: 'Discover & Support Local Businesses',
+        subtext: 'Connect directly with skilled women entrepreneurs in your community and support local micro-enterprises.',
+        primaryText: 'Explore Local Businesses',
+        primaryLink: '/businesses',
+        secondaryText: 'My Orders',
+        secondaryLink: '/orders',
+      };
+    }
+    if (isEntrepreneur) {
+      return {
+        heading: 'Grow Your Business with Aatmanirbhar Nari',
+        subtext: 'Manage your business profile, service offerings, operating schedules, and incoming customer orders.',
+        primaryText: 'My Business',
+        primaryLink: '/entrepreneur/dashboard?tab=details',
+        secondaryText: 'Manage Orders',
+        secondaryLink: '/entrepreneur/dashboard?tab=orders',
+      };
+    }
+    if (isAdmin) {
+      return {
+        heading: 'Manage Aatmanirbhar Nari',
+        subtext: 'Oversee community verification requests, platform metrics, and user management.',
+        primaryText: 'Admin Dashboard',
+        primaryLink: '/admin/dashboard',
+        secondaryText: 'Explore Businesses',
+        secondaryLink: '/businesses',
+      };
+    }
+    return {
+      heading: 'Join the Movement of Empowered Women',
+      subtext: 'Whether you are a customer looking for authentic home food & services, or a woman entrepreneur looking to expand your reach, Aatmanirbhar Nari is here for you.',
+      primaryText: 'Register Your Business',
+      primaryLink: '/auth/register',
+      secondaryText: 'Explore Local Businesses',
+      secondaryLink: '/businesses',
+    };
+  };
+
+  const cta = getCtaContent();
 
   return (
     <div className="bg-brand-background min-h-screen py-12">
@@ -177,21 +226,21 @@ const About = () => {
         {/* Bottom CTA Banner */}
         <div className="bg-gradient-to-r from-brand-secondary via-brand-secondary/95 to-brand-primary text-white rounded-2xl p-8 sm:p-12 text-center shadow-lg">
           <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">
-            Join the Movement of Empowered Women
+            {cta.heading}
           </h2>
           <p className="text-sm sm:text-base text-white/90 max-w-xl mx-auto mb-8 leading-relaxed">
-            Whether you are a customer looking for authentic home food & services, or a woman entrepreneur looking to expand your reach, Aatmanirbhar Nari is here for you.
+            {cta.subtext}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link to="/auth/register">
+            <Link to={cta.primaryLink}>
               <Button variant="primary" size="lg" className="bg-white text-brand-secondary hover:bg-brand-surface">
-                Register Your Business
+                {cta.primaryText}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
-            <Link to="/businesses">
+            <Link to={cta.secondaryLink}>
               <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">
-                Explore Local Businesses
+                {cta.secondaryText}
               </Button>
             </Link>
           </div>

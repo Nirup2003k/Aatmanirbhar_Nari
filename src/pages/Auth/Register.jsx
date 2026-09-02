@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Building, MapPin, Tag, CheckCircle2, ArrowRight, ArrowLeft, Sparkles, ChefHat, Scissors, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Building, MapPin, Tag, CheckCircle2, ArrowRight, ArrowLeft, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
 
-const CATEGORIES = [
-  { id: '1', name: 'Tiffin Services', icon: ChefHat },
-  { id: '2', name: 'Tailoring & Boutique', icon: Scissors },
-  { id: '3', name: 'Beauty Services', icon: Sparkles },
-  { id: '4', name: 'Handicrafts & Decor', icon: Tag },
-];
+import { OFFICIAL_CATEGORIES } from '../../constants/categories';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -129,7 +124,7 @@ const Register = () => {
     navigate('/businesses');
   };
 
-  const categoryObj = CATEGORIES.find((c) => c.id === formData.categoryId) || CATEGORIES[0];
+  const categoryObj = OFFICIAL_CATEGORIES.find((c) => String(c.id) === String(formData.categoryId)) || OFFICIAL_CATEGORIES[0];
 
   return (
     <div className="bg-brand-background min-h-screen py-12 px-4 sm:px-6">
@@ -350,14 +345,14 @@ const Register = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
                   Craft / Industry Category <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-2 gap-3 mt-1">
-                  {CATEGORIES.map((cat) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                  {OFFICIAL_CATEGORIES.map((cat) => (
                     <button
                       key={cat.id}
                       type="button"
-                      onClick={() => updateField('categoryId', cat.id)}
+                      onClick={() => updateField('categoryId', String(cat.id))}
                       className={`p-3 rounded-xl border text-left flex items-center space-x-2 transition-all ${
-                        formData.categoryId === cat.id
+                        String(formData.categoryId) === String(cat.id)
                           ? 'bg-brand-primary/10 border-brand-primary text-brand-primary font-bold shadow-sm'
                           : 'bg-brand-background border-brand-border text-brand-text hover:border-brand-primary/40'
                       }`}

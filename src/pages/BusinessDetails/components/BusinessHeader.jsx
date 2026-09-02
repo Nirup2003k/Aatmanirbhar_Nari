@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Store, ChevronRight } from 'lucide-react';
+import { ArrowLeft, MapPin, Store, ChevronRight, ShieldCheck, Building2 } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
+import Button from '../../../components/common/Button';
 
 const BusinessHeader = ({ business }) => {
+  const { user } = useAuth();
   const categoryName = business.category;
 
   const isAvailable = Array.isArray(business.availability)
@@ -13,8 +16,30 @@ const BusinessHeader = ({ business }) => {
     ? business.availability
     : (isAvailable ? 'Available' : 'Busy');
 
+  const isVerified = business.verificationStatus === 'APPROVED';
+  const isOwner = user?.role === 'ENTREPRENEUR' && user?.id === business.ownerId;
+
   return (
     <div className="mb-8">
+      {isOwner && (
+        <div className="mb-6 p-4 bg-brand-primary/10 border border-brand-primary/30 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-brand-primary text-white rounded-lg flex-shrink-0">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-bold text-brand-secondary text-sm block">Your Registered Business Profile</span>
+              <span className="text-xs text-brand-muted">You are previewing your business page as it appears to customers.</span>
+            </div>
+          </div>
+          <Link to="/entrepreneur/dashboard?tab=details" className="w-full sm:w-auto">
+            <Button variant="primary" size="sm" className="w-full sm:w-auto">
+              Manage My Business
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* Top Navigation & Breadcrumbs */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <Link
@@ -55,7 +80,7 @@ const BusinessHeader = ({ business }) => {
             High-resolution visual preview placeholder
           </span>
 
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                 isAvailable
@@ -70,15 +95,33 @@ const BusinessHeader = ({ business }) => {
 
         {/* Profile Info Details */}
         <div className="p-6 sm:p-8">
-          <div className="mb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <span className="inline-block text-xs font-bold text-brand-primary uppercase tracking-wider bg-brand-primary/10 px-2.5 py-1 rounded-md">
               {categoryName}
             </span>
+            {isVerified && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-xs">
+                <ShieldCheck className="w-4 h-4 mr-1 text-emerald-600" /> Platform Verified
+              </span>
+            )}
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-bold text-brand-secondary mb-3">
             {business.businessName}
           </h1>
+
+          {/* Short Explanation of Platform Verification */}
+          {isVerified && (
+            <div className="mb-4 p-3 bg-emerald-50/80 border border-emerald-200 rounded-lg text-xs text-emerald-900 flex items-start gap-2.5 shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <strong className="font-semibold block mb-0.5">Platform Verified Enterprise</strong>
+                <span>
+                  This business has been reviewed and verified by the Aatmanirbhar Nari platform for entrepreneur identity, location authenticity, and service quality standards.
+                </span>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center text-sm text-brand-muted gap-y-2 gap-x-4 mb-4">
             <div className="flex items-center">

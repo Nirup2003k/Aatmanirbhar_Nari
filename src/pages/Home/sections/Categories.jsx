@@ -14,7 +14,7 @@ const Categories = () => {
           subtitle="Discover skilled women entrepreneurs offering products and services near you."
         />
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
           {categories.map((category) => (
             <CategoryCard key={category.id} category={category} />
           ))}

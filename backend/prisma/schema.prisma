@@ -13,6 +13,12 @@ enum Role {
   ADMIN
 }
 
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum InquiryStatus {
   PENDING
   ACCEPTED
@@ -31,39 +37,47 @@ enum OrderStatus {
 }
 
 model User {
-  id           Int        @id @default(autoincrement())
-  name         String
-  email        String     @unique
-  phone        String
-  passwordHash String
-  role         Role       @default(CUSTOMER)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  businesses   Business[]
-  inquiries    Inquiry[]
-  orders       Order[]
+  id                 Int        @id @default(autoincrement())
+  name               String
+  email              String     @unique
+  phone              String
+  passwordHash       String
+  role               Role       @default(CUSTOMER)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  businesses         Business[]
+  inquiries          Inquiry[]
+  orders             Order[]
+  verifiedBusinesses Business[] @relation("VerifiedBusinesses")
 }
 
 model Business {
-  id              Int                    @id @default(autoincrement())
-  businessName    String
-  category        String
-  description     String                 @db.Text
-  ownerName       String
-  ownerId         Int?
-  experienceLevel String
-  location        String
-  serviceArea     String
-  pricingRange    String
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
-  owner           User?                  @relation(fields: [ownerId], references: [id], onDelete: SetNull)
-  services        Service[]
-  availability    BusinessAvailability[]
-  inquiries       Inquiry[]
-  orders          Order[]
+  id                  Int                    @id @default(autoincrement())
+  businessName        String
+  category            String
+  description         String                 @db.Text
+  ownerName           String
+  ownerId             Int?
+  experienceLevel     String
+  location            String
+  serviceArea         String
+  pricingRange        String
+  verificationStatus  VerificationStatus     @default(PENDING)
+  verificationDetails String?                @db.Text
+  verificationReason  String?                @db.Text
+  verifiedAt          DateTime?
+  verifiedById        Int?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  owner               User?                  @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  verifiedBy          User?                  @relation("VerifiedBusinesses", fields: [verifiedById], references: [id], onDelete: SetNull)
+  services            Service[]
+  availability        BusinessAvailability[]
+  inquiries           Inquiry[]
+  orders              Order[]
 
   @@index([ownerId])
+  @@index([verificationStatus])
 }
 
 model Service {

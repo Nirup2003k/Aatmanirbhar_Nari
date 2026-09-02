@@ -6,7 +6,9 @@ const getAllBusinesses = async (req, res, next) => {
   try {
     const { search, location, category, availability } = req.query;
 
-    const whereConditions = [];
+    const whereConditions = [
+      { verificationStatus: 'APPROVED' },
+    ];
 
     if (search && search.trim() !== '') {
       const searchTerm = search.trim();
@@ -51,7 +53,7 @@ const getAllBusinesses = async (req, res, next) => {
       }
     }
 
-    const where = whereConditions.length > 0 ? { AND: whereConditions } : {};
+    const where = { AND: whereConditions };
 
     const businesses = await prisma.business.findMany({
       where,
@@ -64,10 +66,13 @@ const getAllBusinesses = async (req, res, next) => {
       },
     });
 
+    // Strip private verification details/reasons from public response
+    const sanitizedBusinesses = businesses.map(({ verificationDetails: _vd, verificationReason: _vr, ...b }) => b);
+
     return res.status(200).json({
       success: true,
-      count: businesses.length,
-      data: businesses,
+      count: sanitizedBusinesses.length,
+      data: sanitizedBusinesses,
     });
   } catch (error) {
     next(error);
@@ -101,9 +106,26 @@ const getBusinessById = async (req, res, next) => {
       });
     }
 
+    // Access control for non-APPROVED businesses:
+    // Only accessible if requester is the verified business owner (req.user.id) OR an ADMIN user (req.user.role === 'ADMIN')
+    if (business.verificationStatus !== 'APPROVED') {
+      const isOwner = req.user && req.user.id === business.ownerId;
+      const isAdmin = req.user && req.user.role === 'ADMIN';
+
+      if (!isOwner && !isAdmin) {
+        return res.status(404).json({
+          success: false,
+          message: 'Business not found',
+        });
+      }
+    }
+
+    // Strip private verification fields from standard business details endpoint
+    const { verificationDetails: _vd, verificationReason: _vr, ...publicData } = business;
+
     return res.status(200).json({
       success: true,
-      data: business,
+      data: publicData,
     });
   } catch (error) {
     next(error);
@@ -120,6 +142,7 @@ const createBusiness = async (req, res, next) => {
       location,
       serviceArea,
       pricingRange,
+      verificationDetails,
       services,
       availability,
     } = req.body;
@@ -158,6 +181,8 @@ const createBusiness = async (req, res, next) => {
         location: location.trim(),
         serviceArea: (serviceArea || location).trim(),
         pricingRange: (pricingRange || 'Contact for pricing').trim(),
+        verificationStatus: 'PENDING',
+        verificationDetails: (verificationDetails || '').trim(),
         services: services && Array.isArray(services) ? {
           create: services.map((s) => ({
             name: String(s.name || '').trim(),
@@ -183,7 +208,7 @@ const createBusiness = async (req, res, next) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Business created successfully',
+      message: 'Business created successfully and submitted for admin verification.',
       data: business,
     });
   } catch (error) {

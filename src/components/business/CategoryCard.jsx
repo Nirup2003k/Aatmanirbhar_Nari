@@ -1,12 +1,15 @@
 import React from 'react';
-import { ChefHat, Scissors, Sparkles, Palette, Store, ArrowRight } from 'lucide-react';
+import { ChefHat, Scissors, Sparkles, Palette, UtensilsCrossed, GraduationCap, Store, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const iconMap = {
-  ChefHat: ChefHat,
-  Scissors: Scissors,
-  Sparkles: Sparkles,
-  Palette: Palette,
+  ChefHat,
+  Scissors,
+  Sparkles,
+  Palette,
+  UtensilsCrossed,
+  GraduationCap,
+  Store,
 };
 
 const CategoryCard = ({ category }) => {

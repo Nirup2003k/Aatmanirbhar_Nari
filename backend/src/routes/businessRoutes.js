@@ -10,11 +10,11 @@ const {
   updateAvailability,
   createInquiry,
 } = require('../controllers/businessController');
-const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
+const { authenticateToken, optionalAuth, authorizeRoles } = require('../middleware/authMiddleware');
 
 // Public GET routes
 router.get('/', getAllBusinesses);
-router.get('/:id', getBusinessById);
+router.get('/:id', optionalAuth, getBusinessById);
 
 // Protected Entrepreneur Business routes
 router.post('/', authenticateToken, authorizeRoles('ENTREPRENEUR'), createBusiness);
