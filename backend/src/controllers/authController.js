@@ -2,7 +2,14 @@ const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'aatmanirbhar_nari_jwt_secret_key_2026';
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || typeof secret !== 'string' || !secret.trim()) {
+    throw new Error('JWT_SECRET environment variable is missing or empty.');
+  }
+  return secret;
+};
+
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 
 const setAuthCookie = (res, token) => {
@@ -104,7 +111,7 @@ const register = async (req, res, next) => {
       },
     });
 
-    const token = jwt.sign({ id: newUser.id, role: newUser.role }, JWT_SECRET, {
+    const token = jwt.sign({ id: newUser.id, role: newUser.role }, getJwtSecret(), {
       expiresIn: JWT_EXPIRES_IN,
     });
 
@@ -153,7 +160,7 @@ const login = async (req, res, next) => {
       });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
+    const token = jwt.sign({ id: user.id, role: user.role }, getJwtSecret(), {
       expiresIn: JWT_EXPIRES_IN,
     });
 

@@ -1,7 +1,13 @@
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'aatmanirbhar_nari_jwt_secret_key_2026';
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || typeof secret !== 'string' || !secret.trim()) {
+    throw new Error('JWT_SECRET environment variable is missing or empty.');
+  }
+  return secret;
+};
 
 const authenticateToken = async (req, res, next) => {
   try {
@@ -18,9 +24,11 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
+    const secret = getJwtSecret();
+
     let decoded;
     try {
-      decoded = jwt.verify(token, JWT_SECRET);
+      decoded = jwt.verify(token, secret);
     } catch {
       return res.status(401).json({
         success: false,
@@ -62,8 +70,9 @@ const optionalAuth = async (req, res, next) => {
     }
 
     if (token) {
+      const secret = getJwtSecret();
       try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, secret);
         const user = await prisma.user.findUnique({
           where: { id: decoded.id },
           select: {
