@@ -8,7 +8,6 @@ const {
   createService,
   updateService,
   updateAvailability,
-  createInquiry,
 } = require('../controllers/businessController');
 const { authenticateToken, optionalAuth, authorizeRoles } = require('../middleware/authMiddleware');
 
@@ -27,7 +26,5 @@ router.put('/:id/services/:serviceId', authenticateToken, authorizeRoles('ENTREP
 // Protected Entrepreneur Availability route
 router.put('/:id/availability', authenticateToken, authorizeRoles('ENTREPRENEUR'), updateAvailability);
 
-// Public/Legacy Inquiry route
-router.post('/:id/inquiries', createInquiry);
-
 module.exports = router;
+

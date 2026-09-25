@@ -1,11 +1,12 @@
 import React from 'react';
 import Hero from './sections/Hero';
-import ValueStrip from './sections/ValueStrip';
 import Categories from './sections/Categories';
 import FeaturedBusinesses from './sections/FeaturedBusinesses';
+import ValueStrip from './sections/ValueStrip';
 import HowItWorks from './sections/HowItWorks';
-import LearningResources from './sections/LearningResources';
 import EntrepreneurCTA from './sections/EntrepreneurCTA';
+import LearningResources from './sections/LearningResources';
+import FinalCTA from './sections/FinalCTA';
 import { useAuth } from '../../context/AuthContext';
 
 const Home = () => {
@@ -17,14 +18,15 @@ const Home = () => {
   const showLearning = !isCustomer && !isAdmin;
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-[#080a0d] overflow-x-hidden">
       <Hero />
-      <ValueStrip />
       <Categories />
       <FeaturedBusinesses />
+      <ValueStrip />
       <HowItWorks />
-      {showLearning && <LearningResources />}
       <EntrepreneurCTA />
+      {showLearning && <LearningResources />}
+      <FinalCTA />
     </div>
   );
 };

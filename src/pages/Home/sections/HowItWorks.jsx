@@ -1,230 +1,314 @@
-import React from 'react';
-import SectionHeading from '../../../components/common/SectionHeading';
-import { Search, Eye, MessageCircle, UserPlus, ListPlus, TrendingUp, ShoppingBag, Package } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Search, Eye, MessageCircle, UserPlus, ListPlus, TrendingUp, ShoppingBag, Package, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Button from '../../../components/common/Button';
 import { useAuth } from '../../../context/AuthContext';
 
 const HowItWorks = () => {
   const { user, isAuthenticated } = useAuth();
+  const sectionRef = useRef(null);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"]
+  });
+
+  const lineHeight = useTransform(scrollYProgress, [0.1, 0.7], ["0%", "100%"]);
 
   const isCustomer = isAuthenticated && user?.role === 'CUSTOMER';
   const isEntrepreneur = isAuthenticated && user?.role === 'ENTREPRENEUR';
 
   const customerFullSteps = [
     {
-      icon: <Search className="w-6 h-6 text-brand-primary" />,
-      title: "1. Discover",
-      description: "Browse verified local women-led micro-enterprises in your area."
+      stepNumber: "01",
+      icon: <Search className="w-6 h-6 text-[#c5a059]" />,
+      title: "Discover Local Businesses",
+      description: "Browse verified local women-led micro-enterprises offering tiffin, tailoring, beauty, and tutoring."
     },
     {
-      icon: <Eye className="w-6 h-6 text-brand-primary" />,
-      title: "2. Explore Services",
-      description: "View pricing, service details, and operating availability schedules."
+      stepNumber: "02",
+      icon: <Eye className="w-6 h-6 text-[#c5a059]" />,
+      title: "Explore Services & Pricing",
+      description: "View transparent pricing, service menus, photos, and weekly operating availability schedules."
     },
     {
-      icon: <ShoppingBag className="w-6 h-6 text-brand-primary" />,
-      title: "3. Add to Cart",
-      description: "Select items or custom service options directly to your cart."
+      stepNumber: "03",
+      icon: <ShoppingBag className="w-6 h-6 text-[#c5a059]" />,
+      title: "Add Items to Cart",
+      description: "Select daily meals, custom garments, or beauty treatments directly into your shopping cart."
     },
     {
-      icon: <Package className="w-6 h-6 text-brand-primary" />,
-      title: "4. Place Order & Track",
-      description: "Submit orders with local delivery info and track progress in real-time."
+      stepNumber: "04",
+      icon: <Package className="w-6 h-6 text-[#c5a059]" />,
+      title: "Place Order & Track",
+      description: "Submit orders with your local delivery address and track fulfillment progress in real-time."
     }
   ];
 
   const entrepreneurFullSteps = [
     {
-      icon: <UserPlus className="w-6 h-6 text-brand-primary" />,
-      title: "1. Register Business Profile",
-      description: "Sign up and set up your enterprise details and service location."
+      stepNumber: "01",
+      icon: <UserPlus className="w-6 h-6 text-[#c5a059]" />,
+      title: "Create Business Profile",
+      description: "Register your micro-enterprise details, service location, and business description in minutes."
     },
     {
-      icon: <ListPlus className="w-6 h-6 text-brand-primary" />,
-      title: "2. Add Services & Hours",
-      description: "List what you offer along with pricing and weekly operating schedules."
+      stepNumber: "02",
+      icon: <ListPlus className="w-6 h-6 text-[#c5a059]" />,
+      title: "List Services & Schedule",
+      description: "Add your offerings with transparent pricing and set your weekly available operating hours."
     },
     {
-      icon: <TrendingUp className="w-6 h-6 text-brand-primary" />,
-      title: "3. Submit for Verification",
-      description: "Get verified by our team to earn the Platform Verified badge."
+      stepNumber: "03",
+      icon: <TrendingUp className="w-6 h-6 text-[#c5a059]" />,
+      title: "Earn Platform Verification",
+      description: "Submit details to get reviewed by our team and receive the trusted Platform Verified badge."
     },
     {
-      icon: <Package className="w-6 h-6 text-brand-primary" />,
-      title: "4. Receive & Manage Orders",
-      description: "Accept customer requests, update order status, and grow your income."
+      stepNumber: "04",
+      icon: <Package className="w-6 h-6 text-[#c5a059]" />,
+      title: "Receive & Manage Orders",
+      description: "Accept customer requests, update order delivery statuses, and expand your local client base."
     }
   ];
 
   const guestCustomerSteps = [
     {
-      icon: <Search className="w-6 h-6 text-brand-secondary" />,
-      title: "1. Discover",
-      description: "Find women-led businesses near you."
+      stepNumber: "01",
+      icon: <Search className="w-5 h-5 text-[#c5a059]" />,
+      title: "Discover",
+      description: "Find skilled women entrepreneurs in your local neighborhood."
     },
     {
-      icon: <Eye className="w-6 h-6 text-brand-secondary" />,
-      title: "2. Explore",
-      description: "View services, pricing, availability, and business details."
+      stepNumber: "02",
+      icon: <Eye className="w-5 h-5 text-[#c5a059]" />,
+      title: "Explore",
+      description: "View services, pricing, availability schedules, and business details."
     },
     {
-      icon: <MessageCircle className="w-6 h-6 text-brand-secondary" />,
-      title: "3. Connect",
-      description: "Send an inquiry directly to the entrepreneur."
+      stepNumber: "03",
+      icon: <MessageCircle className="w-5 h-5 text-[#c5a059]" />,
+      title: "Connect & Order",
+      description: "Send direct inquiries or place orders with local entrepreneurs."
     }
   ];
 
   const guestEntrepreneurSteps = [
     {
-      icon: <UserPlus className="w-6 h-6 text-brand-primary" />,
-      title: "1. Create your profile",
-      description: "Sign up and set up your business details."
+      stepNumber: "01",
+      icon: <UserPlus className="w-5 h-5 text-emerald-400" />,
+      title: "Create Profile",
+      description: "Register your home business and set up your digital profile."
     },
     {
-      icon: <ListPlus className="w-6 h-6 text-brand-primary" />,
-      title: "2. Add your services",
-      description: "List what you offer along with pricing and availability."
+      stepNumber: "02",
+      icon: <ListPlus className="w-5 h-5 text-emerald-400" />,
+      title: "Add Offerings",
+      description: "List services, set pricing options, and specify availability."
     },
     {
-      icon: <TrendingUp className="w-6 h-6 text-brand-primary" />,
-      title: "3. Get discovered",
-      description: "Connect with local customers and grow."
+      stepNumber: "03",
+      icon: <TrendingUp className="w-5 h-5 text-emerald-400" />,
+      title: "Grow Income",
+      description: "Connect with nearby neighborhood customers and scale your craft."
     }
   ];
 
   return (
-    <section id="how-it-works" className="bg-brand-background py-20 border-b border-brand-border/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeading title="How It Works" />
+    <section id="how-it-works" ref={sectionRef} className="bg-[#10131b] py-24 border-b border-[#1f2533] relative overflow-hidden">
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* Section Title */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#c5a059] mb-2">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Simple 3-Step Journey</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-100 tracking-tight">
+            How Aatmanirbhar Nari Works
+          </h2>
+          <p className="text-sm sm:text-base text-stone-400 mt-3">
+            Connecting neighborhood customers directly with verified women-led micro-enterprises.
+          </p>
+        </div>
 
         {isCustomer ? (
-          /* CUSTOMER ONLY WORKFLOW */
-          <div className="bg-brand-surface rounded-2xl p-8 sm:p-10 border border-brand-border shadow-sm max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold text-brand-secondary mb-2 text-center">Customer Ordering Experience</h3>
-            <p className="text-center text-brand-text mb-8">Four simple steps to order from local women entrepreneurs.</p>
+          /* CUSTOMER LOGGED IN WORKFLOW */
+          <div className="bg-[#151924] rounded-3xl p-8 sm:p-12 border border-[#252c3c] shadow-2xl max-w-5xl mx-auto">
+            <h3 className="text-2xl font-bold text-stone-100 mb-2 text-center">Customer Ordering Experience</h3>
+            <p className="text-center text-stone-400 mb-12 text-sm">Four seamless steps from discovery to doorstep fulfillment.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {customerFullSteps.map((step, index) => (
-                <div key={index} className="bg-brand-background border border-brand-border rounded-xl p-5 flex items-start space-x-4">
-                  <div className="w-10 h-10 rounded-full bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center flex-shrink-0">
+                <motion.div 
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-[#1a1f2e] border border-[#272f40] rounded-2xl p-6 flex items-start gap-4 hover:border-[#c5a059]/40 transition-all"
+                >
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#121620] border border-[#272e3f] shadow-xs flex items-center justify-center font-bold text-[#c5a059]">
                     {step.icon}
                   </div>
                   <div>
-                    <h4 className="text-base font-bold text-brand-secondary mb-1">{step.title}</h4>
-                    <p className="text-xs text-brand-text leading-relaxed">{step.description}</p>
+                    <span className="text-xs font-extrabold text-[#c5a059] uppercase tracking-widest">{step.stepNumber}</span>
+                    <h4 className="text-base font-bold text-stone-100 mb-1">{step.title}</h4>
+                    <p className="text-xs text-stone-400 leading-relaxed">{step.description}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 
-            <div className="mt-8 text-center flex flex-wrap justify-center gap-4">
+            <div className="mt-10 text-center flex flex-wrap justify-center gap-4">
               <Link to="/businesses">
-                <Button variant="primary" size="lg">Explore Local Businesses</Button>
+                <button className="bg-[#c5a059] hover:bg-[#d4b068] text-stone-950 font-bold text-sm py-3 px-6 rounded-xl transition-all flex items-center justify-center cursor-pointer">
+                  Explore Local Businesses <ArrowRight className="w-4 h-4 ml-2" />
+                </button>
               </Link>
               <Link to="/orders">
-                <Button variant="outline" size="lg">View My Orders</Button>
+                <button className="bg-[#1c212e] hover:bg-[#252c3d] text-stone-200 border border-[#2e3749] font-semibold text-sm py-3 px-6 rounded-xl transition-all cursor-pointer">
+                  View My Orders
+                </button>
               </Link>
             </div>
           </div>
         ) : isEntrepreneur ? (
-          /* ENTREPRENEUR ONLY WORKFLOW */
-          <div className="bg-brand-surface rounded-2xl p-8 sm:p-10 border border-brand-primary/20 shadow-sm max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold text-brand-primary mb-2 text-center">Entrepreneur Business Workflow</h3>
-            <p className="text-center text-brand-text mb-8">Manage, verify, and receive orders for your home business.</p>
+          /* ENTREPRENEUR LOGGED IN WORKFLOW */
+          <div className="bg-[#151924] rounded-3xl p-8 sm:p-12 border border-[#252c3c] shadow-2xl max-w-5xl mx-auto">
+            <h3 className="text-2xl font-bold text-[#c5a059] mb-2 text-center">Entrepreneur Business Workflow</h3>
+            <p className="text-center text-stone-400 mb-12 text-sm">Manage offerings, earn verification, and receive local orders.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {entrepreneurFullSteps.map((step, index) => (
-                <div key={index} className="bg-brand-background border border-brand-border rounded-xl p-5 flex items-start space-x-4">
-                  <div className="w-10 h-10 rounded-full bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center flex-shrink-0">
+                <motion.div 
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-[#1a1f2e] border border-[#272f40] rounded-2xl p-6 flex items-start gap-4 hover:border-[#c5a059]/40 transition-all"
+                >
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#121620] border border-[#272e3f] shadow-xs flex items-center justify-center font-bold text-[#c5a059]">
                     {step.icon}
                   </div>
                   <div>
-                    <h4 className="text-base font-bold text-brand-secondary mb-1">{step.title}</h4>
-                    <p className="text-xs text-brand-text leading-relaxed">{step.description}</p>
+                    <span className="text-xs font-extrabold text-[#c5a059] uppercase tracking-widest">{step.stepNumber}</span>
+                    <h4 className="text-base font-bold text-stone-100 mb-1">{step.title}</h4>
+                    <p className="text-xs text-stone-400 leading-relaxed">{step.description}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 
-            <div className="mt-8 text-center flex flex-wrap justify-center gap-4">
+            <div className="mt-10 text-center flex flex-wrap justify-center gap-4">
               <Link to="/entrepreneur/dashboard">
-                <Button variant="primary" size="lg">Go to Business Dashboard</Button>
+                <button className="bg-[#c5a059] hover:bg-[#d4b068] text-stone-950 font-bold text-sm py-3 px-6 rounded-xl transition-all flex items-center justify-center cursor-pointer">
+                  Go to Business Dashboard <ArrowRight className="w-4 h-4 ml-2" />
+                </button>
               </Link>
               <Link to="/learning">
-                <Button variant="outline" size="lg">View Business Guides</Button>
+                <button className="bg-[#1c212e] hover:bg-[#252c3d] text-stone-200 border border-[#2e3749] font-semibold text-sm py-3 px-6 rounded-xl transition-all cursor-pointer">
+                  View Business Guides
+                </button>
               </Link>
             </div>
           </div>
         ) : (
-          /* GUEST / ADMIN DUAL WORKFLOW */
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8">
-            {/* Customer Path */}
-            <div className="bg-brand-surface rounded-2xl p-8 border border-brand-border shadow-sm">
-              <h3 className="text-2xl font-bold text-brand-secondary mb-8 text-center">For Customers</h3>
-              <div className="space-y-8 relative">
-                <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-brand-border -z-10"></div>
-                {guestCustomerSteps.map((step, index) => (
-                  <div key={index} className="flex relative">
-                    <div className="flex-shrink-0 mr-4 bg-brand-surface">
-                      <div className="w-12 h-12 rounded-full bg-brand-background border-2 border-brand-border flex items-center justify-center text-brand-secondary font-bold shadow-sm">
-                        {index + 1}
-                      </div>
-                    </div>
-                    <div className="pt-2">
-                      <h4 className="text-lg font-semibold text-brand-secondary mb-1 flex items-center">
-                        {step.icon}
-                        <span className="ml-2">{step.title.split('. ')[1]}</span>
-                      </h4>
-                      <p className="text-brand-text">{step.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-10 text-center">
-                <Link to="/businesses">
-                  <Button variant="outline" className="w-full sm:w-auto">
-                    Find Businesses
-                  </Button>
-                </Link>
-              </div>
-            </div>
+          /* GUEST / GENERAL WORKFLOW WITH SCROLL-ANIMATED STEP CARDS */
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
+            
+            {/* Customer Journey Card */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="bg-[#151924] rounded-3xl p-8 border border-[#252c3c] shadow-2xl relative flex flex-col justify-between"
+            >
+              <div>
+                <div className="inline-block bg-[#1d2230] text-[#c5a059] px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border border-[#2f374a]">
+                  For Customers
+                </div>
+                <h3 className="text-2xl font-extrabold text-stone-100 mb-6">Order From Local Women Entrepreneurs</h3>
 
-            {/* Entrepreneur Path */}
-            <div className="bg-brand-surface rounded-2xl p-8 border border-brand-primary/20 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-bl-full -z-10"></div>
-              <h3 className="text-2xl font-bold text-brand-primary mb-2 text-center">Want to start your own business?</h3>
-              <p className="text-center text-brand-text mb-8">Join our community of women entrepreneurs.</p>
-              
-              <div className="space-y-8 relative">
-                <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-brand-primary/20 -z-10"></div>
-                {guestEntrepreneurSteps.map((step, index) => (
-                  <div key={index} className="flex relative">
-                    <div className="flex-shrink-0 mr-4 bg-brand-surface">
-                      <div className="w-12 h-12 rounded-full bg-brand-primary/10 border-2 border-brand-primary/30 flex items-center justify-center text-brand-primary font-bold shadow-sm">
-                        {index + 1}
+                <div className="space-y-6 relative">
+                  {/* Animated Connecting Line */}
+                  <motion.div 
+                    style={{ height: lineHeight }}
+                    className="absolute left-5 top-5 bottom-5 w-0.5 bg-[#c5a059]/30 origin-top -z-0 hidden sm:block" 
+                  />
+
+                  {guestCustomerSteps.map((step, index) => (
+                    <div key={index} className="flex gap-4 relative z-10">
+                      <div className="w-10 h-10 rounded-full bg-[#1e2331] border-2 border-[#c5a059] text-[#c5a059] flex items-center justify-center font-bold text-sm shadow-xs flex-shrink-0">
+                        {step.stepNumber}
+                      </div>
+                      <div className="pt-0.5">
+                        <h4 className="text-base font-bold text-stone-100 flex items-center gap-2">
+                          {step.title}
+                        </h4>
+                        <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">{step.description}</p>
                       </div>
                     </div>
-                    <div className="pt-2">
-                      <h4 className="text-lg font-semibold text-brand-secondary mb-1 flex items-center">
-                        {step.icon}
-                        <span className="ml-2">{step.title.split('. ')[1]}</span>
-                      </h4>
-                      <p className="text-brand-text">{step.description}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-              <div className="mt-10 text-center">
-                <Link to="/auth/register">
-                  <Button variant="primary" className="w-full sm:w-auto">
-                    Start Your Business
-                  </Button>
+
+              <div className="mt-8 pt-6 border-t border-[#252c3c]">
+                <Link to="/businesses" className="block">
+                  <button className="w-full justify-center bg-[#c5a059] hover:bg-[#d4b068] text-stone-950 font-bold text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center cursor-pointer">
+                    Explore Businesses <ArrowRight className="w-4 h-4 ml-2" />
+                  </button>
                 </Link>
               </div>
-            </div>
+            </motion.div>
+
+            {/* Entrepreneur Journey Card */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="bg-[#0e121a] rounded-3xl p-8 border border-[#202737] shadow-2xl relative flex flex-col justify-between"
+            >
+              <div>
+                <div className="inline-block bg-[#1f2838] text-emerald-400 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-500/30">
+                  For Entrepreneurs
+                </div>
+                <h3 className="text-2xl font-extrabold text-stone-100 mb-6">Turn Your Skill Into a Business</h3>
+
+                <div className="space-y-6 relative">
+                  {guestEntrepreneurSteps.map((step, index) => (
+                    <div key={index} className="flex gap-4 relative z-10">
+                      <div className="w-10 h-10 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 flex items-center justify-center font-bold text-sm shadow-xs flex-shrink-0">
+                        {step.stepNumber}
+                      </div>
+                      <div className="pt-0.5">
+                        <h4 className="text-base font-bold text-stone-100 flex items-center gap-2">
+                          {step.title}
+                        </h4>
+                        <p className="text-xs text-stone-300 mt-0.5 leading-relaxed">{step.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-[#202737]">
+                <Link to="/auth/register" className="block">
+                  <button className="w-full justify-center bg-[#18202d] text-stone-100 border border-[#2a3447] hover:bg-[#222c3e] hover:border-[#c5a059] font-bold text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center cursor-pointer">
+                    Start Your Business <ArrowRight className="w-4 h-4 ml-2" />
+                  </button>
+                </Link>
+              </div>
+            </motion.div>
+
           </div>
         )}
+
       </div>
     </section>
   );

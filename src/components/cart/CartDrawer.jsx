@@ -23,7 +23,7 @@ const CartDrawer = () => {
         onClick={closeCartDrawer}
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
         <div className="w-screen max-w-md bg-brand-surface border-l border-brand-border shadow-xl flex flex-col">
           {/* Header */}
           <div className="p-5 border-b border-brand-border flex items-center justify-between bg-brand-background/50">
@@ -37,7 +37,9 @@ const CartDrawer = () => {
               )}
             </div>
             <button
+              type="button"
               onClick={closeCartDrawer}
+              aria-label="Close cart drawer"
               className="p-1.5 rounded-lg text-brand-muted hover:text-brand-secondary hover:bg-brand-background transition-colors"
             >
               <X className="w-5 h-5" />
@@ -89,33 +91,37 @@ const CartDrawer = () => {
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <h4 className="text-sm font-bold text-brand-secondary">{item.name}</h4>
-                            <p className="text-xs text-brand-muted">{item.priceStr}</p>
+                            <h4 className="text-sm font-bold text-stone-100">{item.name}</h4>
+                            <p className="text-xs text-stone-400">{item.priceStr}</p>
                           </div>
                           <button
                             onClick={() => removeFromCart(item.serviceId)}
-                            className="text-brand-muted hover:text-red-600 p-1 rounded transition-colors"
+                            className="text-stone-400 hover:text-red-400 p-1.5 rounded transition-colors"
                             title="Remove item"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
 
-                        <div className="flex items-center justify-between pt-2 border-t border-brand-border/40">
+                        <div className="flex items-center justify-between pt-2 border-t border-[#252c3c]">
                           {/* Quantity Controls */}
-                          <div className="flex items-center space-x-2 bg-brand-background border border-brand-border rounded-lg p-1">
+                          <div className="flex items-center space-x-1.5 bg-[#0d1015] border border-[#252c3c] rounded-lg p-1">
                             <button
+                              type="button"
                               onClick={() => updateQuantity(item.serviceId, item.quantity - 1)}
-                              className="p-1 rounded text-brand-secondary hover:bg-brand-surface transition-colors"
+                              className="p-2 sm:p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded text-stone-300 hover:bg-[#1a202c] hover:text-stone-100 transition-colors cursor-pointer"
+                              title="Decrease quantity"
                             >
                               <Minus className="w-3.5 h-3.5" />
                             </button>
-                            <span className="text-xs font-bold w-6 text-center text-brand-secondary">
+                            <span className="text-xs font-bold w-6 text-center text-stone-100">
                               {item.quantity}
                             </span>
                             <button
+                              type="button"
                               onClick={() => updateQuantity(item.serviceId, item.quantity + 1)}
-                              className="p-1 rounded text-brand-secondary hover:bg-brand-surface transition-colors"
+                              className="p-2 sm:p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded text-stone-300 hover:bg-[#1a202c] hover:text-stone-100 transition-colors cursor-pointer"
+                              title="Increase quantity"
                             >
                               <Plus className="w-3.5 h-3.5" />
                             </button>
@@ -123,8 +129,8 @@ const CartDrawer = () => {
 
                           {/* Subtotal */}
                           <div className="text-right">
-                            <span className="text-xs text-brand-muted block">Subtotal</span>
-                            <span className="text-sm font-bold text-brand-secondary">
+                            <span className="text-xs text-stone-400 block">Subtotal</span>
+                            <span className="text-sm font-bold text-stone-100">
                               ₹{subtotal.toFixed(2)}
                             </span>
                           </div>

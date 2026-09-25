@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -7,17 +7,22 @@ import Footer from './components/footer/Footer';
 import Home from './pages/Home/Home';
 import Businesses from './pages/Businesses/Businesses';
 import BusinessDetails from './pages/BusinessDetails/BusinessDetails';
-import LearningHub from './pages/Learning/LearningHub';
-import LearningArticle from './pages/Learning/LearningArticle';
 import About from './pages/About/About';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
-import EntrepreneurDashboard from './pages/Entrepreneur/EntrepreneurDashboard';
-import AdminDashboard from './pages/Admin/AdminDashboard';
-import Checkout from './pages/Orders/Checkout';
-import MyOrders from './pages/Orders/MyOrders';
-import OrderDetails from './pages/Orders/OrderDetails';
+import Privacy from './pages/Legal/Privacy';
+import Terms from './pages/Legal/Terms';
+import Contact from './pages/Legal/Contact';
 import ProtectedRoute from './components/common/ProtectedRoute';
+
+// Lazy-loaded heavy route components
+const LearningHub = lazy(() => import('./pages/Learning/LearningHub'));
+const LearningArticle = lazy(() => import('./pages/Learning/LearningArticle'));
+const EntrepreneurDashboard = lazy(() => import('./pages/Entrepreneur/EntrepreneurDashboard'));
+const AdminDashboard = lazy(() => import('./pages/Admin/AdminDashboard'));
+const Checkout = lazy(() => import('./pages/Orders/Checkout'));
+const MyOrders = lazy(() => import('./pages/Orders/MyOrders'));
+const OrderDetails = lazy(() => import('./pages/Orders/OrderDetails'));
 
 // Scroll to top or specific hash on route change
 const ScrollToAnchor = () => {
@@ -53,6 +58,16 @@ const NotFoundPage = () => (
   </div>
 );
 
+// Page route fallback component for Suspense
+const PageLoader = () => (
+  <div className="flex-grow flex items-center justify-center min-h-[50vh] bg-brand-background py-20">
+    <div className="flex flex-col items-center space-y-3 text-center">
+      <div className="w-8 h-8 border-2 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin" />
+      <p className="text-xs font-semibold text-brand-muted tracking-wide">Loading content...</p>
+    </div>
+  </div>
+);
+
 const App = () => {
   return (
     <AuthProvider>
@@ -62,57 +77,62 @@ const App = () => {
           <div className="flex flex-col min-h-screen font-sans">
             <Navbar />
             <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/businesses" element={<Businesses />} />
-                <Route path="/businesses/:id" element={<BusinessDetails />} />
-                <Route path="/learning" element={<LearningHub />} />
-                <Route path="/learning/:id" element={<LearningArticle />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/auth/login" element={<Login />} />
-                <Route path="/auth/register" element={<Register />} />
-                <Route
-                  path="/checkout"
-                  element={
-                    <ProtectedRoute allowedRoles={['CUSTOMER']}>
-                      <Checkout />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/orders"
-                  element={
-                    <ProtectedRoute allowedRoles={['CUSTOMER']}>
-                      <MyOrders />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/orders/:id"
-                  element={
-                    <ProtectedRoute allowedRoles={['CUSTOMER']}>
-                      <OrderDetails />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/entrepreneur/dashboard"
-                  element={
-                    <ProtectedRoute allowedRoles={['ENTREPRENEUR']}>
-                      <EntrepreneurDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/dashboard"
-                  element={
-                    <ProtectedRoute allowedRoles={['ADMIN']}>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/businesses" element={<Businesses />} />
+                  <Route path="/businesses/:id" element={<BusinessDetails />} />
+                  <Route path="/learning" element={<LearningHub />} />
+                  <Route path="/learning/:id" element={<LearningArticle />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/auth/login" element={<Login />} />
+                  <Route path="/auth/register" element={<Register />} />
+                  <Route
+                    path="/checkout"
+                    element={
+                      <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                        <Checkout />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/orders"
+                    element={
+                      <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                        <MyOrders />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/orders/:id"
+                    element={
+                      <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                        <OrderDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/entrepreneur/dashboard"
+                    element={
+                      <ProtectedRoute allowedRoles={['ENTREPRENEUR']}>
+                        <EntrepreneurDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/dashboard"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN']}>
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Suspense>
             </main>
             <Footer />
           </div>

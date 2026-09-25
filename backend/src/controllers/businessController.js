@@ -189,6 +189,7 @@ const createBusiness = async (req, res, next) => {
             description: String(s.description || '').trim(),
             price: String(s.price || '').trim(),
             availability: String(s.availability || 'Available').trim(),
+            imageUrl: s.imageUrl && String(s.imageUrl).trim() ? String(s.imageUrl).trim() : null,
           })),
         } : undefined,
         availability: availability && Array.isArray(availability) ? {
@@ -316,7 +317,7 @@ const createService = async (req, res, next) => {
       });
     }
 
-    const { name, description, price, availability } = req.body;
+    const { name, description, price, availability, imageUrl } = req.body;
 
     if (!name || !String(name).trim()) {
       return res.status(400).json({
@@ -332,6 +333,7 @@ const createService = async (req, res, next) => {
         description: String(description || '').trim(),
         price: String(price || '').trim(),
         availability: String(availability || 'Available').trim(),
+        imageUrl: imageUrl && String(imageUrl).trim() ? String(imageUrl).trim() : null,
       },
     });
 
@@ -401,13 +403,16 @@ const updateService = async (req, res, next) => {
       });
     }
 
-    const { name, description, price, availability } = req.body;
+    const { name, description, price, availability, imageUrl } = req.body;
 
     const updateData = {};
     if (name !== undefined) updateData.name = String(name).trim();
     if (description !== undefined) updateData.description = String(description).trim();
     if (price !== undefined) updateData.price = String(price).trim();
     if (availability !== undefined) updateData.availability = String(availability).trim();
+    if (imageUrl !== undefined) {
+      updateData.imageUrl = imageUrl && String(imageUrl).trim() ? String(imageUrl).trim() : null;
+    }
 
     const updatedService = await prisma.service.update({
       where: { id: numericServiceId },
@@ -528,37 +533,6 @@ const updateAvailability = async (req, res, next) => {
   }
 };
 
-const createInquiry = async (req, res, next) => {
-  try {
-    const { businessId, serviceId, customerName, customerEmail, customerPhone, message } = req.body;
-
-    if (!businessId || !serviceId || !customerName || !customerPhone) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required inquiry fields.',
-      });
-    }
-
-    const inquiry = await prisma.inquiry.create({
-      data: {
-        businessId: Number(businessId),
-        serviceId: Number(serviceId),
-        customerName,
-        customerEmail: customerEmail || '',
-        customerPhone,
-        message: message || '',
-      },
-    });
-
-    return res.status(201).json({
-      success: true,
-      data: inquiry,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 module.exports = {
   getAllBusinesses,
   getBusinessById,
@@ -567,5 +541,4 @@ module.exports = {
   createService,
   updateService,
   updateAvailability,
-  createInquiry,
 };

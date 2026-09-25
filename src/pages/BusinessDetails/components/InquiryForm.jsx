@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Send, CheckCircle2, AlertCircle, RefreshCw, Loader2, LogIn, ShieldAlert } from 'lucide-react';
 import Button from '../../../components/common/Button';
+import SmoothInput from '../../../components/common/SmoothInput';
 import { createInquiry } from '../../../services/api';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -123,15 +124,15 @@ const InquiryForm = ({ businessId, services, selectedServiceId, businessName }) 
   // Requirement 30: Unauthenticated Customer UX Handling
   if (!isAuthenticated) {
     return (
-      <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-6 text-center space-y-4">
-        <div className="w-10 h-10 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto">
+      <div className="bg-[#1c170c] border border-amber-500/30 rounded-xl p-6 text-center space-y-4">
+        <div className="w-10 h-10 bg-amber-950/80 text-amber-300 border border-amber-500/30 rounded-full flex items-center justify-center mx-auto">
           <LogIn className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="text-base font-bold text-amber-900 mb-1">
+          <h3 className="text-base font-bold text-amber-200 mb-1">
             Customer Login Required
           </h3>
-          <p className="text-xs text-amber-800 leading-relaxed">
+          <p className="text-xs text-amber-300/80 leading-relaxed">
             Please log in as a Customer to send a direct inquiry to <strong>{businessName}</strong>.
           </p>
         </div>
@@ -147,15 +148,15 @@ const InquiryForm = ({ businessId, services, selectedServiceId, businessName }) 
   // Non-Customer Role Warning
   if (role !== 'CUSTOMER') {
     return (
-      <div className="bg-brand-background border border-brand-border rounded-xl p-6 text-center space-y-3">
-        <div className="w-10 h-10 bg-brand-surface text-brand-muted rounded-full flex items-center justify-center mx-auto border border-brand-border">
-          <ShieldAlert className="w-5 h-5 text-brand-primary" />
+      <div className="bg-[#151922] border border-[#252c3c] rounded-xl p-6 text-center space-y-3">
+        <div className="w-10 h-10 bg-[#1e2330] text-stone-300 rounded-full flex items-center justify-center mx-auto border border-[#2d3548]">
+          <ShieldAlert className="w-5 h-5 text-[#c5a059]" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-brand-secondary mb-1">
+          <h3 className="text-sm font-bold text-stone-100 mb-1">
             Customer Account Required
           </h3>
-          <p className="text-xs text-brand-muted leading-relaxed">
+          <p className="text-xs text-stone-400 leading-relaxed">
             Only Customer accounts can send service inquiries. You are logged in as <strong>{role}</strong>.
           </p>
         </div>
@@ -166,18 +167,18 @@ const InquiryForm = ({ businessId, services, selectedServiceId, businessName }) 
   // Success UI
   if (isSubmitted) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-        <div className="w-12 h-12 bg-green-100 border border-green-300 rounded-full flex items-center justify-center text-green-700 mx-auto mb-3">
+      <div className="bg-[#0d2218] border border-emerald-500/30 rounded-xl p-6 text-center">
+        <div className="w-12 h-12 bg-emerald-950/80 border border-emerald-500/40 rounded-full flex items-center justify-center text-emerald-300 mx-auto mb-3">
           <CheckCircle2 className="w-6 h-6" />
         </div>
-        <h3 className="text-lg font-bold text-green-900 mb-2">
+        <h3 className="text-lg font-bold text-emerald-200 mb-2">
           Inquiry sent successfully
         </h3>
-        <p className="text-sm text-green-800 mb-5 leading-relaxed">
+        <p className="text-sm text-emerald-300/90 mb-5 leading-relaxed">
           Thank you for reaching out to <strong>{businessName}</strong>. Your inquiry has been sent to the entrepreneur.
         </p>
 
-        <Button variant="outline" size="sm" onClick={handleReset} className="bg-white">
+        <Button variant="outline" size="sm" onClick={handleReset}>
           <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
           Send Another Inquiry
         </Button>
@@ -189,7 +190,7 @@ const InquiryForm = ({ businessId, services, selectedServiceId, businessName }) 
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       {/* Inline API Error alert */}
       {apiError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 flex items-start">
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 flex items-start">
           <AlertCircle className="w-4 h-4 mr-2 text-red-600 flex-shrink-0 mt-0.5" />
           <span>{apiError}</span>
         </div>
@@ -200,7 +201,7 @@ const InquiryForm = ({ businessId, services, selectedServiceId, businessName }) 
         <label htmlFor="inquiry-name" className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
           Your Name <span className="text-red-500">*</span>
         </label>
-        <input
+        <SmoothInput
           id="inquiry-name"
           type="text"
           disabled={isSubmitting}
@@ -224,7 +225,7 @@ const InquiryForm = ({ businessId, services, selectedServiceId, businessName }) 
         <label htmlFor="inquiry-email" className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
           Email Address <span className="text-red-500">*</span>
         </label>
-        <input
+        <SmoothInput
           id="inquiry-email"
           type="email"
           disabled={isSubmitting}
@@ -248,7 +249,7 @@ const InquiryForm = ({ businessId, services, selectedServiceId, businessName }) 
         <label htmlFor="inquiry-phone" className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
           Phone Number <span className="text-red-500">*</span>
         </label>
-        <input
+        <SmoothInput
           id="inquiry-phone"
           type="tel"
           disabled={isSubmitting}

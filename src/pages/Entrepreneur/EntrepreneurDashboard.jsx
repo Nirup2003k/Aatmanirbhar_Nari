@@ -21,6 +21,7 @@ import {
   User,
 } from 'lucide-react';
 import Button from '../../components/common/Button';
+import SmoothInput from '../../components/common/SmoothInput';
 import {
   getEntrepreneurBusinesses,
   createBusiness,
@@ -259,6 +260,7 @@ const EntrepreneurDashboard = () => {
         description: service.description || '',
         price: service.price || '',
         availability: service.availability || 'Available',
+        imageUrl: service.imageUrl || '',
       });
     } else {
       setEditingService(null);
@@ -267,6 +269,7 @@ const EntrepreneurDashboard = () => {
         description: '',
         price: '',
         availability: 'Available',
+        imageUrl: '',
       });
     }
     setIsServiceModalOpen(true);
@@ -396,49 +399,49 @@ const EntrepreneurDashboard = () => {
     switch (status) {
       case 'PENDING':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-            <Clock className="w-3 h-3 mr-1 text-amber-600" /> Pending
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-950/80 text-amber-300 border border-amber-500/40">
+            <Clock className="w-3 h-3 mr-1 text-amber-400" /> Pending
           </span>
         );
       case 'ACCEPTED':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
-            <CheckCircle className="w-3 h-3 mr-1 text-blue-600" /> Accepted
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-950/80 text-sky-300 border border-sky-500/40">
+            <CheckCircle className="w-3 h-3 mr-1 text-sky-400" /> Accepted
           </span>
         );
       case 'PREPARING':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
-            <Clock className="w-3 h-3 mr-1 text-purple-600" /> Preparing
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-950/80 text-purple-300 border border-purple-500/40">
+            <Clock className="w-3 h-3 mr-1 text-purple-400" /> Preparing
           </span>
         );
       case 'READY':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">
-            <CheckCircle className="w-3 h-3 mr-1 text-indigo-600" /> Ready
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-950/80 text-indigo-300 border border-indigo-500/40">
+            <CheckCircle className="w-3 h-3 mr-1 text-indigo-400" /> Ready
           </span>
         );
       case 'COMPLETED':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-            <Check className="w-3 h-3 mr-1 text-emerald-600" /> Completed
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">
+            <Check className="w-3 h-3 mr-1 text-emerald-400" /> Completed
           </span>
         );
       case 'REJECTED':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
-            <XCircle className="w-3 h-3 mr-1 text-red-600" /> Rejected
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-950/80 text-red-300 border border-red-500/40">
+            <XCircle className="w-3 h-3 mr-1 text-red-400" /> Rejected
           </span>
         );
       case 'CANCELLED':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
-            <XCircle className="w-3 h-3 mr-1 text-gray-600" /> Cancelled
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-stone-900/90 text-stone-400 border border-stone-700/50">
+            <XCircle className="w-3 h-3 mr-1 text-stone-500" /> Cancelled
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-stone-900/90 text-stone-400 border border-stone-700/50">
             {status}
           </span>
         );
@@ -613,10 +616,12 @@ const EntrepreneurDashboard = () => {
         ) : (
           <div>
             {/* Tab Header Navigation */}
-            <div className="flex border-b border-brand-border mb-6 space-x-2 overflow-x-auto">
+            <nav aria-label="Business dashboard section navigation" className="flex border-b border-brand-border mb-6 space-x-2 overflow-x-auto scroll-hint pb-2">
               <button
+                type="button"
                 onClick={() => setActiveTab('details')}
-                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center ${
+                aria-current={activeTab === 'details' ? 'page' : undefined}
+                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center cursor-pointer ${
                   activeTab === 'details'
                     ? 'border-brand-primary text-brand-primary'
                     : 'border-transparent text-brand-muted hover:text-brand-secondary'
@@ -627,8 +632,10 @@ const EntrepreneurDashboard = () => {
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveTab('services')}
-                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center ${
+                aria-current={activeTab === 'services' ? 'page' : undefined}
+                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center cursor-pointer ${
                   activeTab === 'services'
                     ? 'border-brand-primary text-brand-primary'
                     : 'border-transparent text-brand-muted hover:text-brand-secondary'
@@ -639,8 +646,10 @@ const EntrepreneurDashboard = () => {
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveTab('availability')}
-                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center ${
+                aria-current={activeTab === 'availability' ? 'page' : undefined}
+                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center cursor-pointer ${
                   activeTab === 'availability'
                     ? 'border-brand-primary text-brand-primary'
                     : 'border-transparent text-brand-muted hover:text-brand-secondary'
@@ -651,8 +660,10 @@ const EntrepreneurDashboard = () => {
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveTab('inquiries')}
-                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center ${
+                aria-current={activeTab === 'inquiries' ? 'page' : undefined}
+                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center cursor-pointer ${
                   activeTab === 'inquiries'
                     ? 'border-brand-primary text-brand-primary'
                     : 'border-transparent text-brand-muted hover:text-brand-secondary'
@@ -663,8 +674,10 @@ const EntrepreneurDashboard = () => {
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveTab('orders')}
-                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center ${
+                aria-current={activeTab === 'orders' ? 'page' : undefined}
+                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center cursor-pointer ${
                   activeTab === 'orders'
                     ? 'border-brand-primary text-brand-primary'
                     : 'border-transparent text-brand-muted hover:text-brand-secondary'
@@ -673,7 +686,7 @@ const EntrepreneurDashboard = () => {
                 <Package className="w-4 h-4 mr-2" />
                 Customer Orders {orders.length > 0 ? `(${activeOrdersCount})` : ''}
               </button>
-            </div>
+            </nav>
 
             {/* TAB 1: BUSINESS DETAILS */}
             {activeTab === 'details' && (
@@ -911,6 +924,18 @@ const EntrepreneurDashboard = () => {
                         className="bg-brand-background border border-brand-border rounded-xl p-4 flex flex-col justify-between hover:border-brand-primary/40 transition-colors shadow-2xs"
                       >
                         <div>
+                          {srv.imageUrl && (
+                            <div className="mb-3 overflow-hidden rounded-lg border border-brand-border/60 bg-brand-surface h-36 flex items-center justify-center">
+                              <img
+                                src={srv.imageUrl}
+                                alt={srv.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.parentElement.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <h3 className="font-bold text-brand-secondary text-sm leading-snug">{srv.name}</h3>
                             <span className="text-xs font-bold text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded whitespace-nowrap">
@@ -1299,7 +1324,7 @@ const EntrepreneurDashboard = () => {
                   <label className="block text-xs font-bold text-brand-secondary uppercase mb-1">
                     Business Name *
                   </label>
-                  <input
+                  <SmoothInput
                     type="text"
                     required
                     placeholder="e.g. Sahana Tailoring Studio"
@@ -1331,7 +1356,7 @@ const EntrepreneurDashboard = () => {
                   <label className="block text-xs font-bold text-brand-secondary uppercase mb-1">
                     Location / Area *
                   </label>
-                  <input
+                  <SmoothInput
                     type="text"
                     required
                     placeholder="e.g. Gokul Road, Hubli"
@@ -1345,7 +1370,7 @@ const EntrepreneurDashboard = () => {
                   <label className="block text-xs font-bold text-brand-secondary uppercase mb-1">
                     Service Area Coverage
                   </label>
-                  <input
+                  <SmoothInput
                     type="text"
                     placeholder="e.g. Serving Gokul Road and Akshay Park"
                     value={newBusinessForm.serviceArea}
@@ -1358,7 +1383,7 @@ const EntrepreneurDashboard = () => {
                   <label className="block text-xs font-bold text-brand-secondary uppercase mb-1">
                     Pricing Range
                   </label>
-                  <input
+                  <SmoothInput
                     type="text"
                     placeholder="e.g. Starts from ₹300"
                     value={newBusinessForm.pricingRange}
@@ -1371,7 +1396,7 @@ const EntrepreneurDashboard = () => {
                   <label className="block text-xs font-bold text-brand-secondary uppercase mb-1">
                     Experience Level
                   </label>
-                  <input
+                  <SmoothInput
                     type="text"
                     placeholder="e.g. 8+ years experience"
                     value={newBusinessForm.experienceLevel}
@@ -1460,7 +1485,7 @@ const EntrepreneurDashboard = () => {
                   <label className="block text-xs font-bold text-brand-secondary uppercase mb-1">
                     Service Name *
                   </label>
-                  <input
+                  <SmoothInput
                     type="text"
                     required
                     placeholder="e.g. Designer Blouse Stitching"
@@ -1474,7 +1499,7 @@ const EntrepreneurDashboard = () => {
                   <label className="block text-xs font-bold text-brand-secondary uppercase mb-1">
                     Price Tag / Rate *
                   </label>
-                  <input
+                  <SmoothInput
                     type="text"
                     required
                     placeholder="e.g. ₹450 - ₹800"
@@ -1488,7 +1513,7 @@ const EntrepreneurDashboard = () => {
                   <label className="block text-xs font-bold text-brand-secondary uppercase mb-1">
                     Availability / Turnaround Time
                   </label>
-                  <input
+                  <SmoothInput
                     type="text"
                     placeholder="e.g. Monday - Saturday or 3-5 days delivery"
                     value={serviceForm.availability}
@@ -1508,6 +1533,35 @@ const EntrepreneurDashboard = () => {
                     onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
                     className="w-full bg-brand-background border border-brand-border rounded-lg p-3 text-sm text-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-brand-secondary uppercase mb-1">
+                    Service Image URL (Optional)
+                  </label>
+                  <SmoothInput
+                    type="url"
+                    placeholder="https://example.com/image.jpg"
+                    value={serviceForm.imageUrl || ''}
+                    onChange={(e) => setServiceForm({ ...serviceForm, imageUrl: e.target.value })}
+                    className="w-full bg-brand-background border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+                  />
+                  <p className="text-[11px] text-brand-muted mt-1">
+                    Direct image link for this service.
+                  </p>
+                  {serviceForm.imageUrl && serviceForm.imageUrl.trim() !== '' && (
+                    <div className="mt-2 p-2 bg-brand-background border border-brand-border rounded-lg">
+                      <span className="text-[10px] uppercase font-bold text-brand-muted block mb-1">Preview</span>
+                      <img
+                        src={serviceForm.imageUrl.trim()}
+                        alt="Service Preview"
+                        className="max-h-28 rounded object-cover border border-brand-border/50"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-end gap-3 pt-3 border-t border-brand-border">

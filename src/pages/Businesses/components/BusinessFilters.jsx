@@ -45,17 +45,17 @@ const BusinessFilters = ({
 
       {/* Category Filter */}
       <div>
-        <h4 className="text-xs font-bold uppercase tracking-wider text-brand-secondary mb-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-stone-200 mb-3">
           Category
         </h4>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <button
             type="button"
             onClick={() => setSelectedCategory('all')}
             className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
               selectedCategory === 'all'
-                ? 'bg-brand-primary/10 text-brand-primary font-semibold'
-                : 'text-brand-text hover:bg-brand-background'
+                ? 'bg-[#c5a059]/15 text-[#c5a059] font-semibold border border-[#c5a059]/30'
+                : 'text-stone-300 hover:bg-[#1d222e] hover:text-stone-100'
             }`}
           >
             All Categories
@@ -67,8 +67,8 @@ const BusinessFilters = ({
               onClick={() => setSelectedCategory(String(cat.id))}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                 selectedCategory === String(cat.id)
-                  ? 'bg-brand-primary/10 text-brand-primary font-semibold'
-                  : 'text-brand-text hover:bg-brand-background'
+                  ? 'bg-[#c5a059]/15 text-[#c5a059] font-semibold border border-[#c5a059]/30'
+                  : 'text-stone-300 hover:bg-[#1d222e] hover:text-stone-100'
               }`}
             >
               {cat.name}
@@ -81,7 +81,7 @@ const BusinessFilters = ({
       <div>
         <label
           htmlFor="location-filter-select"
-          className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-3"
+          className="block text-xs font-bold uppercase tracking-wider text-stone-200 mb-3"
         >
           Location
         </label>
@@ -89,11 +89,11 @@ const BusinessFilters = ({
           id="location-filter-select"
           value={selectedLocation}
           onChange={(e) => setSelectedLocation(e.target.value)}
-          className="w-full bg-brand-background border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-primary transition-colors"
+          className="w-full bg-[#0d1015] border border-[#252c3c] rounded-lg px-3 py-2 text-sm text-stone-200 focus:outline-none focus:border-[#c5a059] transition-colors"
         >
           <option value="all">All Locations</option>
           {locations.map((loc) => (
-            <option key={loc} value={loc}>
+            <option key={loc} value={loc} className="bg-[#0d1015] text-stone-200">
               {loc}
             </option>
           ))}
@@ -102,10 +102,10 @@ const BusinessFilters = ({
 
       {/* Availability Filter */}
       <div>
-        <h4 className="text-xs font-bold uppercase tracking-wider text-brand-secondary mb-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-stone-200 mb-3">
           Availability
         </h4>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {availabilityOptions.map((opt) => (
             <button
               key={opt.id}
@@ -113,8 +113,8 @@ const BusinessFilters = ({
               onClick={() => setSelectedAvailability(opt.id)}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                 selectedAvailability === opt.id
-                  ? 'bg-brand-primary/10 text-brand-primary font-semibold'
-                  : 'text-brand-text hover:bg-brand-background'
+                  ? 'bg-[#c5a059]/15 text-[#c5a059] font-semibold border border-[#c5a059]/30'
+                  : 'text-stone-300 hover:bg-[#1d222e] hover:text-stone-100'
               }`}
             >
               {opt.label}

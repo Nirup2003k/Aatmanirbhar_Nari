@@ -1,56 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Clock, Store, ChevronRight, AlertCircle } from 'lucide-react';
+import { Package, Clock, Store, ChevronRight, AlertCircle, AlertTriangle } from 'lucide-react';
 import { getCustomerOrders } from '../../services/api';
 import Button from '../../components/common/Button';
+import ReportModal from '../../components/common/ReportModal';
 
 export const renderStatusBadge = (status) => {
   switch (status) {
     case 'PENDING':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-amber-300 bg-amber-950/80 border border-amber-500/40 px-2.5 py-1 rounded-full">
           Pending Acceptance
         </span>
       );
     case 'ACCEPTED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-blue-800 bg-blue-100 border border-blue-300 px-2.5 py-1 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-sky-300 bg-sky-950/80 border border-sky-500/40 px-2.5 py-1 rounded-full">
           Order Accepted
         </span>
       );
     case 'PREPARING':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-purple-800 bg-purple-100 border border-purple-300 px-2.5 py-1 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-purple-300 bg-purple-950/80 border border-purple-500/40 px-2.5 py-1 rounded-full">
           Preparing Order
         </span>
       );
     case 'READY':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-teal-800 bg-teal-100 border border-teal-300 px-2.5 py-1 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-teal-300 bg-teal-950/80 border border-teal-500/40 px-2.5 py-1 rounded-full">
           Ready for Delivery / Pickup
         </span>
       );
     case 'COMPLETED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-1 rounded-full">
           Completed
         </span>
       );
     case 'REJECTED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-red-800 bg-red-100 border border-red-300 px-2.5 py-1 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-red-300 bg-red-950/80 border border-red-500/40 px-2.5 py-1 rounded-full">
           Declined by Entrepreneur
         </span>
       );
     case 'CANCELLED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-gray-700 bg-gray-100 border border-gray-300 px-2.5 py-1 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-stone-400 bg-stone-900/90 border border-stone-700/50 px-2.5 py-1 rounded-full">
           Cancelled
         </span>
       );
     default:
       return (
-        <span className="inline-flex items-center text-xs font-bold text-gray-700 bg-gray-100 border border-gray-300 px-2.5 py-1 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-stone-400 bg-stone-900/90 border border-stone-700/50 px-2.5 py-1 rounded-full">
           {status}
         </span>
       );
@@ -61,6 +62,9 @@ const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Reporting State
+  const [reportingOrder, setReportingOrder] = useState(null);
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -111,6 +115,14 @@ const MyOrders = () => {
 
   return (
     <div className="bg-brand-background min-h-screen py-10">
+      <ReportModal
+        isOpen={Boolean(reportingOrder)}
+        onClose={() => setReportingOrder(null)}
+        targetType="order"
+        targetId={reportingOrder?.id}
+        targetName={reportingOrder ? `Order #${reportingOrder.id} (${reportingOrder.business?.businessName || 'Business'})` : ''}
+      />
+
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Navigation & Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -195,12 +207,22 @@ const MyOrders = () => {
                       {order.items?.map((item) => `${item.service?.name || 'Service'} × ${item.quantity}`).join(', ')}
                     </div>
 
-                    <Link to={`/orders/${order.id}`}>
-                      <Button variant="outline" size="sm" className="w-full sm:w-auto justify-center text-xs">
-                        <span>View Order Details</span>
-                        <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                      </Button>
-                    </Link>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setReportingOrder(order)}
+                        className="inline-flex items-center text-xs text-amber-400 hover:text-amber-300 font-semibold px-2.5 py-1.5 rounded-lg bg-amber-950/40 border border-amber-500/30 transition-colors"
+                        title="Report an issue with this order"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5 mr-1" />
+                        Report
+                      </button>
+                      <Link to={`/orders/${order.id}`}>
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto justify-center text-xs">
+                          <span>View Order Details</span>
+                          <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               );

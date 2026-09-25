@@ -787,3 +787,115 @@ export async function rejectBusinessVerification(id, rejectionReason) {
 
   return data;
 }
+
+/**
+ * Submit a report (Customer only)
+ * @param {Object} reportData - { businessId, orderId, inquiryId, reason, description }
+ */
+export async function createReport(reportData) {
+  const response = await fetch(`${API_BASE_URL}/reports`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(reportData),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to submit report.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Fetch submitted reports for customer
+ */
+export async function getCustomerReports() {
+  const response = await fetch(`${API_BASE_URL}/reports`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to fetch reports.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data || [];
+}
+
+/**
+ * Fetch reports list for admin
+ * @param {string} [status] Optional status filter ('ALL', 'OPEN', 'REVIEWED', 'RESOLVED')
+ */
+export async function getAdminReports(status) {
+  const queryParams = new URLSearchParams();
+  if (status && status !== 'ALL') {
+    queryParams.set('status', status);
+  }
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/admin/reports${queryString ? `?${queryString}` : ''}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to fetch admin reports.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data || [];
+}
+
+/**
+ * Fetch single report by ID for admin
+ * @param {number|string} id
+ */
+export async function getAdminReportById(id) {
+  const response = await fetch(`${API_BASE_URL}/admin/reports/${id}`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to fetch report details.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data;
+}
+
+/**
+ * Update report status (Admin only)
+ * @param {number|string} id
+ * @param {string} status - ('OPEN', 'REVIEWED', 'RESOLVED')
+ */
+export async function updateAdminReportStatus(id, status) {
+  const response = await fetch(`${API_BASE_URL}/admin/reports/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ status }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to update report status.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+

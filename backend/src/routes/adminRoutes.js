@@ -10,6 +10,9 @@ const {
   getBusinessVerificationById,
   approveBusiness,
   rejectBusiness,
+  getAdminReports,
+  getAdminReportById,
+  updateReportStatus,
 } = require('../controllers/adminController');
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
@@ -26,5 +29,10 @@ router.get('/business-verifications', getBusinessVerifications);
 router.get('/business-verifications/:id', getBusinessVerificationById);
 router.patch('/business-verifications/:id/approve', approveBusiness);
 router.patch('/business-verifications/:id/reject', rejectBusiness);
+
+// Report Oversight endpoints
+router.get('/reports', getAdminReports);
+router.get('/reports/:id', getAdminReportById);
+router.patch('/reports/:id/status', updateReportStatus);
 
 module.exports = router;

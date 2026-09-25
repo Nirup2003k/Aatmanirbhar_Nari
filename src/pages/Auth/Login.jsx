@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn, Sparkles, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import Button from '../../components/common/Button';
+import SmoothInput from '../../components/common/SmoothInput';
 import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
@@ -82,12 +83,12 @@ const Login = () => {
         <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 sm:p-8 shadow-sm">
           
           {isSuccess ? (
-            <div className="py-8 text-center space-y-3">
-              <div className="w-12 h-12 bg-emerald-100 border border-emerald-300 rounded-full flex items-center justify-center text-emerald-700 mx-auto">
+            <div className="py-8 text-center space-y-3 bg-[#0d2218] border border-emerald-500/30 rounded-xl p-6">
+              <div className="w-12 h-12 bg-emerald-950/80 border border-emerald-500/40 rounded-full flex items-center justify-center text-emerald-300 mx-auto">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-emerald-900">Welcome Back!</h3>
-              <p className="text-xs text-emerald-800">
+              <h3 className="text-lg font-bold text-emerald-200">Welcome Back!</h3>
+              <p className="text-xs text-emerald-300/80">
                 Logged in successfully. Redirecting...
               </p>
             </div>
@@ -95,33 +96,34 @@ const Login = () => {
             <form onSubmit={handleLogin} className="space-y-4" noValidate>
 
               {apiError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 flex items-start">
-                  <AlertCircle className="w-4 h-4 mr-2 text-red-600 flex-shrink-0 mt-0.5" />
+                <div role="alert" className="bg-red-950/60 border border-red-500/30 rounded-lg p-3 text-xs text-red-300 flex items-start">
+                  <AlertCircle className="w-4 h-4 mr-2 text-red-400 flex-shrink-0 mt-0.5" />
                   <span>{apiError}</span>
                 </div>
               )}
               
               {/* Email / Phone */}
               <div>
-                <label htmlFor="login-identifier" className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                <label htmlFor="login-identifier" className="block text-xs font-bold uppercase tracking-wider text-stone-200 mb-1">
                   Email Address <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-brand-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
+                  <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+                  <SmoothInput
                     id="login-identifier"
                     type="email"
+                    autoComplete="email"
                     disabled={isSubmitting}
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
                     placeholder="name@example.com"
-                    className={`w-full bg-brand-background border rounded-lg pl-10 pr-3.5 py-2.5 text-sm text-brand-text focus:outline-none transition-colors ${
-                      errors.emailOrPhone ? 'border-red-500 bg-red-50/20' : 'border-brand-border focus:border-brand-primary'
+                    className={`w-full bg-[#0d1015] border rounded-lg pl-10 pr-3.5 py-2.5 text-sm text-stone-100 focus:outline-none transition-colors ${
+                      errors.emailOrPhone ? 'border-red-500 bg-red-950/20' : 'border-[#252c3c] focus:border-[#c5a059]'
                     }`}
                   />
                 </div>
                 {errors.emailOrPhone && (
-                  <p className="mt-1 text-xs text-red-600 flex items-center">
+                  <p className="mt-1 text-xs text-red-400 flex items-center">
                     <AlertCircle className="w-3 h-3 mr-1 flex-shrink-0" />
                     {errors.emailOrPhone}
                   </p>
@@ -131,26 +133,27 @@ const Login = () => {
               {/* Password */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label htmlFor="login-password" className="block text-xs font-bold uppercase tracking-wider text-brand-secondary">
+                  <label htmlFor="login-password" className="block text-xs font-bold uppercase tracking-wider text-stone-200">
                     Password <span className="text-red-500">*</span>
                   </label>
                 </div>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-brand-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
+                  <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+                  <SmoothInput
                     id="login-password"
                     type="password"
+                    autoComplete="current-password"
                     disabled={isSubmitting}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className={`w-full bg-brand-background border rounded-lg pl-10 pr-3.5 py-2.5 text-sm text-brand-text focus:outline-none transition-colors ${
-                      errors.password ? 'border-red-500 bg-red-50/20' : 'border-brand-border focus:border-brand-primary'
+                    className={`w-full bg-[#0d1015] border rounded-lg pl-10 pr-3.5 py-2.5 text-sm text-stone-100 focus:outline-none transition-colors ${
+                      errors.password ? 'border-red-500 bg-red-950/20' : 'border-[#252c3c] focus:border-[#c5a059]'
                     }`}
                   />
                 </div>
                 {errors.password && (
-                  <p className="mt-1 text-xs text-red-600 flex items-center">
+                  <p className="mt-1 text-xs text-red-400 flex items-center">
                     <AlertCircle className="w-3 h-3 mr-1 flex-shrink-0" />
                     {errors.password}
                   </p>
@@ -180,23 +183,23 @@ const Login = () => {
           )}
 
           {/* Quick Demo Credentials Assistant */}
-          <div className="mt-6 pt-6 border-t border-brand-border/60">
-            <div className="text-xs font-bold text-brand-secondary flex items-center mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-brand-primary mr-1" />
+          <div className="mt-6 pt-6 border-t border-[#252c3c]">
+            <div className="text-xs font-bold text-stone-200 flex items-center mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#c5a059] mr-1" />
               Quick Fill Seed Accounts:
             </div>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => handleFillDemo('customer@aatmanirbharnari.com', 'CustomerPass123!')}
-                className="text-[11px] bg-brand-background hover:bg-brand-surface border border-brand-border px-2.5 py-1 rounded-md text-brand-text transition-colors"
+                className="text-[11px] bg-[#0d1015] hover:bg-[#1a202c] border border-[#252c3c] px-2.5 py-1 rounded-md text-stone-200 transition-colors"
               >
                 Demo Customer
               </button>
               <button
                 type="button"
                 onClick={() => handleFillDemo('annapurna@aatmanirbharnari.com', 'EntrepreneurPass123!')}
-                className="text-[11px] bg-brand-background hover:bg-brand-surface border border-brand-border px-2.5 py-1 rounded-md text-brand-text transition-colors"
+                className="text-[11px] bg-[#0d1015] hover:bg-[#1a202c] border border-[#252c3c] px-2.5 py-1 rounded-md text-stone-200 transition-colors"
               >
                 Annapurna (Entrepreneur)
               </button>

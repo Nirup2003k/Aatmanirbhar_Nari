@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const CartContext = createContext();
 
@@ -42,35 +42,11 @@ export const CartProvider = ({ children }) => {
     }
   }, [cart]);
 
-  const addToCart = (businessId, businessName, service, quantity = 1) => {
-    const numBusinessId = parseInt(businessId, 10);
-    const numServiceId = parseInt(service.id, 10);
-    const qty = Math.max(1, parseInt(quantity, 10) || 1);
-    const unitPrice = parsePriceNumber(service.price);
+  const openCartDrawer = useCallback(() => setIsCartOpen(true), []);
+  const closeCartDrawer = useCallback(() => setIsCartOpen(false), []);
+  const toggleCartDrawer = useCallback(() => setIsCartOpen((prev) => !prev), []);
 
-    const newItem = {
-      serviceId: numServiceId,
-      name: service.name,
-      priceStr: service.price,
-      unitPrice,
-      quantity: qty,
-    };
-
-    // Case 1: Cart exists and belongs to a DIFFERENT business with items
-    if (cart && cart.items && cart.items.length > 0 && cart.businessId !== numBusinessId) {
-      setPendingConflict({
-        newBusinessId: numBusinessId,
-        newBusinessName: businessName,
-        item: newItem,
-      });
-      return;
-    }
-
-    // Case 2: Cart is empty or belongs to SAME business
-    executeAddToCart(numBusinessId, businessName, newItem);
-  };
-
-  const executeAddToCart = (bizId, bizName, item) => {
+  const executeAddToCart = useCallback((bizId, bizName, item) => {
     setCart((prevCart) => {
       if (!prevCart || prevCart.businessId !== bizId || !prevCart.items) {
         return {
@@ -101,9 +77,37 @@ export const CartProvider = ({ children }) => {
     });
 
     setIsCartOpen(true);
-  };
+  }, []);
 
-  const confirmConflictReplacement = () => {
+  const addToCart = useCallback((businessId, businessName, service, quantity = 1) => {
+    const numBusinessId = parseInt(businessId, 10);
+    const numServiceId = parseInt(service.id, 10);
+    const qty = Math.max(1, parseInt(quantity, 10) || 1);
+    const unitPrice = parsePriceNumber(service.price);
+
+    const newItem = {
+      serviceId: numServiceId,
+      name: service.name,
+      priceStr: service.price,
+      unitPrice,
+      quantity: qty,
+    };
+
+    // Case 1: Cart exists and belongs to a DIFFERENT business with items
+    if (cart && cart.items && cart.items.length > 0 && cart.businessId !== numBusinessId) {
+      setPendingConflict({
+        newBusinessId: numBusinessId,
+        newBusinessName: businessName,
+        item: newItem,
+      });
+      return;
+    }
+
+    // Case 2: Cart is empty or belongs to SAME business
+    executeAddToCart(numBusinessId, businessName, newItem);
+  }, [cart, executeAddToCart]);
+
+  const confirmConflictReplacement = useCallback(() => {
     if (pendingConflict) {
       setCart({
         businessId: pendingConflict.newBusinessId,
@@ -113,13 +117,13 @@ export const CartProvider = ({ children }) => {
       setPendingConflict(null);
       setIsCartOpen(true);
     }
-  };
+  }, [pendingConflict]);
 
-  const cancelConflictReplacement = () => {
+  const cancelConflictReplacement = useCallback(() => {
     setPendingConflict(null);
-  };
+  }, []);
 
-  const updateQuantity = (serviceId, newQuantity) => {
+  const updateQuantity = useCallback((serviceId, newQuantity) => {
     const numServiceId = parseInt(serviceId, 10);
     const qty = parseInt(newQuantity, 10);
 
@@ -138,9 +142,9 @@ export const CartProvider = ({ children }) => {
 
       return { ...prevCart, items: updatedItems };
     });
-  };
+  }, []);
 
-  const removeFromCart = (serviceId) => {
+  const removeFromCart = useCallback((serviceId) => {
     const numServiceId = parseInt(serviceId, 10);
     setCart((prevCart) => {
       if (!prevCart || !prevCart.items) return prevCart;
@@ -148,37 +152,59 @@ export const CartProvider = ({ children }) => {
       if (remainingItems.length === 0) return null;
       return { ...prevCart, items: remainingItems };
     });
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setCart(null);
     localStorage.removeItem(CART_STORAGE_KEY);
-  };
+  }, []);
 
-  const cartCount = cart && cart.items ? cart.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+  const cartCount = useMemo(() => {
+    return cart && cart.items ? cart.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+  }, [cart]);
 
-  const cartTotal = cart && cart.items ? cart.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) : 0;
+  const cartTotal = useMemo(() => {
+    return cart && cart.items ? cart.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) : 0;
+  }, [cart]);
+
+  const value = useMemo(
+    () => ({
+      cart,
+      cartCount,
+      cartTotal,
+      isCartOpen,
+      setIsCartOpen,
+      openCartDrawer,
+      closeCartDrawer,
+      toggleCartDrawer,
+      addToCart,
+      updateQuantity,
+      removeFromCart,
+      clearCart,
+      pendingConflict,
+      confirmConflictReplacement,
+      cancelConflictReplacement,
+    }),
+    [
+      cart,
+      cartCount,
+      cartTotal,
+      isCartOpen,
+      openCartDrawer,
+      closeCartDrawer,
+      toggleCartDrawer,
+      addToCart,
+      updateQuantity,
+      removeFromCart,
+      clearCart,
+      pendingConflict,
+      confirmConflictReplacement,
+      cancelConflictReplacement,
+    ]
+  );
 
   return (
-    <CartContext.Provider
-      value={{
-        cart,
-        cartCount,
-        cartTotal,
-        isCartOpen,
-        setIsCartOpen,
-        openCartDrawer: () => setIsCartOpen(true),
-        closeCartDrawer: () => setIsCartOpen(false),
-        toggleCartDrawer: () => setIsCartOpen((prev) => !prev),
-        addToCart,
-        updateQuantity,
-        removeFromCart,
-        clearCart,
-        pendingConflict,
-        confirmConflictReplacement,
-        cancelConflictReplacement,
-      }}
-    >
+    <CartContext.Provider value={value}>
       {children}
 
       {/* Different Business Conflict Modal */}

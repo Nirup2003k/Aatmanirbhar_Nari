@@ -201,8 +201,11 @@ const About = () => {
                   className="bg-brand-surface border border-brand-border rounded-xl overflow-hidden shadow-sm transition-all"
                 >
                   <button
+                    type="button"
                     onClick={() => toggleFaq(index)}
-                    className="w-full px-6 py-4 text-left flex items-center justify-between font-bold text-brand-secondary text-sm sm:text-base hover:bg-brand-background/50 transition-colors"
+                    aria-expanded={isOpen}
+                    aria-controls={`faq-answer-${index}`}
+                    className="w-full px-6 py-4 text-left flex items-center justify-between font-bold text-brand-secondary text-sm sm:text-base hover:bg-brand-background/50 transition-colors cursor-pointer"
                   >
                     <span>{faq.question}</span>
                     {isOpen ? (
@@ -213,7 +216,10 @@ const About = () => {
                   </button>
 
                   {isOpen && (
-                    <div className="px-6 pb-5 pt-1 text-xs sm:text-sm text-brand-text leading-relaxed border-t border-brand-border/40">
+                    <div 
+                      id={`faq-answer-${index}`}
+                      className="px-6 pb-5 pt-1 text-xs sm:text-sm text-brand-text leading-relaxed border-t border-brand-border/40"
+                    >
                       {faq.answer}
                     </div>
                   )}
@@ -224,24 +230,24 @@ const About = () => {
         </div>
 
         {/* Bottom CTA Banner */}
-        <div className="bg-gradient-to-r from-brand-secondary via-brand-secondary/95 to-brand-primary text-white rounded-2xl p-8 sm:p-12 text-center shadow-lg">
-          <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">
+        <div className="bg-gradient-to-r from-[#131722] via-[#161a25] to-[#1d2332] border border-[#262d3e] text-stone-100 rounded-2xl p-8 sm:p-12 text-center shadow-xl">
+          <h2 className="text-2xl sm:text-3xl font-extrabold mb-3 text-stone-100">
             {cta.heading}
           </h2>
-          <p className="text-sm sm:text-base text-white/90 max-w-xl mx-auto mb-8 leading-relaxed">
+          <p className="text-sm sm:text-base text-stone-300 max-w-xl mx-auto mb-8 leading-relaxed">
             {cta.subtext}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link to={cta.primaryLink}>
-              <Button variant="primary" size="lg" className="bg-white text-brand-secondary hover:bg-brand-surface">
+              <button className="bg-[#c5a059] hover:bg-[#d4b068] text-stone-950 font-bold text-sm py-3 px-6 rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-lg">
                 {cta.primaryText}
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              </button>
             </Link>
             <Link to={cta.secondaryLink}>
-              <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">
+              <button className="bg-[#181d29] text-stone-200 border border-[#2b3345] hover:bg-[#222838] font-semibold text-sm py-3 px-6 rounded-xl transition-all cursor-pointer">
                 {cta.secondaryText}
-              </Button>
+              </button>
             </Link>
           </div>
         </div>

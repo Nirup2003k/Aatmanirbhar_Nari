@@ -15,7 +15,7 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 const setAuthCookie = (res, token) => {
   res.cookie('auth_token', token, {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: process.env.COOKIE_SAMESITE || 'lax',
     secure: process.env.NODE_ENV === 'production',
     maxAge: 3600000, // 1 hour in ms
     path: '/',

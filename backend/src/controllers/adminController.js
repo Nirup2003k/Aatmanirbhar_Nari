@@ -432,6 +432,169 @@ const rejectBusiness = async (req, res, next) => {
   }
 };
 
+const getAdminReports = async (req, res, next) => {
+  try {
+    const { status } = req.query;
+
+    const where = {};
+    if (status && status !== 'ALL' && ['OPEN', 'REVIEWED', 'RESOLVED'].includes(status.toUpperCase())) {
+      where.status = status.toUpperCase();
+    }
+
+    const reports = await prisma.report.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        reporter: {
+          select: { id: true, name: true, email: true, phone: true, role: true },
+        },
+        business: {
+          select: { id: true, businessName: true, category: true, ownerName: true },
+        },
+        order: {
+          select: { id: true, totalAmount: true, status: true, customerName: true, createdAt: true },
+        },
+        inquiry: {
+          select: { id: true, message: true, status: true, customerName: true, createdAt: true },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: reports.length,
+      data: reports,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getAdminReportById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const numericId = parseInt(id, 10);
+
+    if (isNaN(numericId)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found',
+      });
+    }
+
+    const report = await prisma.report.findUnique({
+      where: { id: numericId },
+      include: {
+        reporter: {
+          select: { id: true, name: true, email: true, phone: true, role: true },
+        },
+        business: {
+          select: { id: true, businessName: true, category: true, ownerName: true },
+        },
+        order: {
+          select: { id: true, totalAmount: true, status: true, customerName: true, createdAt: true },
+        },
+        inquiry: {
+          select: { id: true, message: true, status: true, customerName: true, createdAt: true },
+        },
+      },
+    });
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: report,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateReportStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const numericId = parseInt(id, 10);
+
+    if (isNaN(numericId)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found',
+      });
+    }
+
+    const ALLOWED_STATUSES = ['OPEN', 'REVIEWED', 'RESOLVED'];
+    if (!status || !ALLOWED_STATUSES.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid report status. Must be one of: ${ALLOWED_STATUSES.join(', ')}`,
+      });
+    }
+
+    const report = await prisma.report.findUnique({ where: { id: numericId } });
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found',
+      });
+    }
+
+    const currentStatus = report.status;
+    const newStatus = status;
+
+    if (currentStatus === 'RESOLVED') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot change status of a RESOLVED report (terminal state).',
+      });
+    }
+
+    const isValidTransition =
+      (currentStatus === 'OPEN' && (newStatus === 'REVIEWED' || newStatus === 'RESOLVED')) ||
+      (currentStatus === 'REVIEWED' && newStatus === 'RESOLVED');
+
+    if (!isValidTransition) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot transition report status from ${currentStatus} to ${newStatus}.`,
+      });
+    }
+
+    const updatedReport = await prisma.report.update({
+      where: { id: numericId },
+      data: { status: newStatus },
+      include: {
+        reporter: {
+          select: { id: true, name: true, email: true, phone: true, role: true },
+        },
+        business: {
+          select: { id: true, businessName: true, category: true },
+        },
+        order: {
+          select: { id: true, totalAmount: true, status: true },
+        },
+        inquiry: {
+          select: { id: true, message: true, status: true },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Report status updated successfully.',
+      data: updatedReport,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAdminStats,
   getAdminUsers,
@@ -442,4 +605,7 @@ module.exports = {
   getBusinessVerificationById,
   approveBusiness,
   rejectBusiness,
+  getAdminReports,
+  getAdminReportById,
+  updateReportStatus,
 };

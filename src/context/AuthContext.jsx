@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { getCurrentUser, loginUser, registerUser, logoutUser } from '../services/api';
 import { AuthContext } from './authContextObject';
 import { useAuth } from './useAuth';
@@ -26,19 +26,19 @@ export const AuthProvider = ({ children }) => {
     fetchAuthUser();
   }, [fetchAuthUser]);
 
-  const login = async (credentials) => {
+  const login = useCallback(async (credentials) => {
     const res = await loginUser(credentials);
     setUser(res.data);
     return res.data;
-  };
+  }, []);
 
-  const register = async (userData) => {
+  const register = useCallback(async (userData) => {
     const res = await registerUser(userData);
     setUser(res.data);
     return res.data;
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await logoutUser();
     } catch (err) {
@@ -46,18 +46,21 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
     }
-  };
+  }, []);
 
-  const value = {
-    user,
-    role: user?.role || null,
-    isAuthenticated: !!user,
-    isLoading,
-    login,
-    register,
-    logout,
-    refetchUser: fetchAuthUser,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      role: user?.role || null,
+      isAuthenticated: !!user,
+      isLoading,
+      login,
+      register,
+      logout,
+      refetchUser: fetchAuthUser,
+    }),
+    [user, isLoading, login, register, logout, fetchAuthUser]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

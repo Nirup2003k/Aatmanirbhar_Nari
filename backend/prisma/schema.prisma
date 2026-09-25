@@ -36,6 +36,12 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum ReportStatus {
+  OPEN
+  REVIEWED
+  RESOLVED
+}
+
 model User {
   id                 Int        @id @default(autoincrement())
   name               String
@@ -48,6 +54,7 @@ model User {
   businesses         Business[]
   inquiries          Inquiry[]
   orders             Order[]
+  reports            Report[]
   verifiedBusinesses Business[] @relation("VerifiedBusinesses")
 }
 
@@ -75,6 +82,7 @@ model Business {
   availability        BusinessAvailability[]
   inquiries           Inquiry[]
   orders              Order[]
+  reports             Report[]
 
   @@index([ownerId])
   @@index([verificationStatus])
@@ -87,6 +95,7 @@ model Service {
   description  String      @db.Text
   price        String
   availability String
+  imageUrl     String?     @db.Text
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   business     Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
@@ -119,6 +128,7 @@ model Inquiry {
   business      Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
   service       Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   customer      User?         @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  reports       Report[]
 
   @@index([customerId])
   @@index([businessId])
@@ -140,6 +150,7 @@ model Order {
   customer User        @relation(fields: [customerId], references: [id], onDelete: Cascade)
   business Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
   items    OrderItem[]
+  reports  Report[]
 
   @@index([customerId])
   @@index([businessId])
@@ -160,4 +171,29 @@ model OrderItem {
   @@index([orderId])
   @@index([serviceId])
 }
+
+model Report {
+  id          Int          @id @default(autoincrement())
+  reporterId  Int
+  businessId  Int?
+  orderId     Int?
+  inquiryId   Int?
+  reason      String
+  description String?      @db.Text
+  status      ReportStatus @default(OPEN)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  reporter User      @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  business Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  order    Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  inquiry  Inquiry?  @relation(fields: [inquiryId], references: [id], onDelete: SetNull)
+
+  @@index([reporterId])
+  @@index([businessId])
+  @@index([orderId])
+  @@index([inquiryId])
+  @@index([status])
+}
+
 

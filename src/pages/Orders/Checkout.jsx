@@ -87,7 +87,7 @@ const Checkout = () => {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-4 flex items-center">
+          <div role="alert" className="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-4 flex items-center">
             <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0" />
             <span>{error}</span>
           </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Building, MapPin, Tag, CheckCircle2, ArrowRight, ArrowLeft, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import Button from '../../components/common/Button';
+import SmoothInput from '../../components/common/SmoothInput';
 import { useAuth } from '../../context/AuthContext';
 
 import { OFFICIAL_CATEGORIES } from '../../constants/categories';
@@ -230,8 +231,9 @@ const Register = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
                   Full Name <span className="text-red-500">*</span>
                 </label>
-                <input
+                <SmoothInput
                   type="text"
+                  autoComplete="name"
                   disabled={isSubmitting}
                   value={formData.ownerName}
                   onChange={(e) => updateField('ownerName', e.target.value)}
@@ -247,8 +249,9 @@ const Register = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
                   WhatsApp / Mobile Number <span className="text-red-500">*</span>
                 </label>
-                <input
+                <SmoothInput
                   type="tel"
+                  autoComplete="tel"
                   disabled={isSubmitting}
                   value={formData.phone}
                   onChange={(e) => updateField('phone', e.target.value)}
@@ -264,8 +267,9 @@ const Register = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
                   Email Address <span className="text-red-500">*</span>
                 </label>
-                <input
+                <SmoothInput
                   type="email"
+                  autoComplete="email"
                   disabled={isSubmitting}
                   value={formData.email}
                   onChange={(e) => updateField('email', e.target.value)}
@@ -281,8 +285,9 @@ const Register = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
                   Create Password <span className="text-red-500">*</span>
                 </label>
-                <input
+                <SmoothInput
                   type="password"
+                  autoComplete="new-password"
                   disabled={isSubmitting}
                   value={formData.password}
                   onChange={(e) => updateField('password', e.target.value)}
@@ -329,7 +334,7 @@ const Register = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
                   Business Name <span className="text-red-500">*</span>
                 </label>
-                <input
+                <SmoothInput
                   type="text"
                   value={formData.businessName}
                   onChange={(e) => updateField('businessName', e.target.value)}
@@ -367,7 +372,7 @@ const Register = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
                   Location / Locality <span className="text-red-500">*</span>
                 </label>
-                <input
+                <SmoothInput
                   type="text"
                   value={formData.location}
                   onChange={(e) => updateField('location', e.target.value)}
@@ -420,7 +425,7 @@ const Register = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
                   Service / Product Title <span className="text-red-500">*</span>
                 </label>
-                <input
+                <SmoothInput
                   type="text"
                   value={formData.serviceName}
                   onChange={(e) => updateField('serviceName', e.target.value)}
@@ -436,7 +441,7 @@ const Register = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
                   Pricing <span className="text-red-500">*</span>
                 </label>
-                <input
+                <SmoothInput
                   type="text"
                   value={formData.servicePrice}
                   onChange={(e) => updateField('servicePrice', e.target.value)}

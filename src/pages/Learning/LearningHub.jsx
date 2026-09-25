@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, BookOpen, Clock, ArrowRight, CheckCircle2, Lightbulb, Sparkles, Filter } from 'lucide-react';
 import Button from '../../components/common/Button';
+import SmoothInput from '../../components/common/SmoothInput';
 import { learningResources } from '../../data/mockData';
 
 const CATEGORIES = ['All', 'Business Setup', 'Pricing & Finance', 'Marketing', 'Branding', 'Legal Basics'];
@@ -51,30 +52,30 @@ const LearningHub = () => {
 
         {/* Featured Banner Card */}
         {featuredResource && (
-          <div className="bg-gradient-to-br from-brand-secondary via-brand-secondary/95 to-brand-primary/90 text-white rounded-2xl p-6 sm:p-10 shadow-lg mb-12 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-[#131722] via-[#161a25] to-[#1d2332] text-stone-100 rounded-2xl p-6 sm:p-10 border border-[#262d3e] shadow-xl mb-12 relative overflow-hidden">
             <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-x-12 translate-y-12">
               <BookOpen className="w-96 h-96" />
             </div>
             <div className="relative z-10 max-w-2xl">
-              <div className="inline-flex items-center bg-white/10 backdrop-blur-md text-amber-200 text-xs font-medium px-3 py-1 rounded-full mb-4 border border-white/10">
+              <div className="inline-flex items-center bg-[#1f2838] text-[#c5a059] text-xs font-medium px-3 py-1 rounded-full mb-4 border border-[#2f374a]">
                 <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
                 Featured Guide
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-3 leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3 leading-tight text-stone-100">
                 {featuredResource.title}
               </h2>
-              <p className="text-brand-surface/90 text-sm sm:text-base mb-6 leading-relaxed">
+              <p className="text-stone-300 text-sm sm:text-base mb-6 leading-relaxed">
                 {featuredResource.summary || featuredResource.description}
               </p>
               <div className="flex flex-wrap items-center gap-4">
                 <Link to={`/learning/${featuredResource.id}`}>
-                  <Button variant="primary" className="bg-white text-brand-secondary hover:bg-brand-surface shadow-md">
+                  <button className="bg-[#c5a059] hover:bg-[#d4b068] text-stone-950 font-bold text-sm py-2.5 px-5 rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-md">
                     Read Full Roadmap
                     <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                  </button>
                 </Link>
-                <span className="text-xs text-white/80 flex items-center">
-                  <Clock className="w-3.5 h-3.5 mr-1 text-amber-300" />
+                <span className="text-xs text-stone-300 flex items-center">
+                  <Clock className="w-3.5 h-3.5 mr-1 text-[#c5a059]" />
                   {featuredResource.readTime}
                 </span>
               </div>
@@ -83,18 +84,18 @@ const LearningHub = () => {
         )}
 
         {/* Interactive Launch Checklist Banner */}
-        <div className="bg-brand-surface border border-brand-border rounded-xl p-6 sm:p-8 mb-12 shadow-sm">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-brand-border/60">
+        <div className="bg-[#151922] border border-[#252c3c] rounded-xl p-6 sm:p-8 mb-12 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-[#252c3c]">
             <div>
-              <h3 className="text-xl font-bold text-brand-secondary flex items-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 mr-2" />
+              <h3 className="text-xl font-bold text-stone-100 flex items-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 mr-2" />
                 4-Step Quick Launch Checklist
               </h3>
-              <p className="text-sm text-brand-muted mt-1">
+              <p className="text-sm text-stone-400 mt-1">
                 Track your setup progress before listing your micro-business online.
               </p>
             </div>
-            <div className="text-xs font-semibold text-brand-primary bg-brand-background px-3 py-1.5 rounded-lg border border-brand-border">
+            <div className="text-xs font-semibold text-[#c5a059] bg-[#0d1015] px-3 py-1.5 rounded-lg border border-[#252c3c]">
               {completedSteps.length} of 4 Completed
             </div>
           </div>
@@ -108,25 +109,28 @@ const LearningHub = () => {
             ].map((step) => {
               const isDone = completedSteps.includes(step.id);
               return (
-                <div
+                <button
                   key={step.id}
+                  type="button"
                   onClick={() => toggleChecklistStep(step.id)}
-                  className={`cursor-pointer rounded-xl p-4 border transition-all duration-200 flex items-start space-x-3 ${
+                  aria-pressed={isDone}
+                  aria-label={`${step.title}: ${isDone ? 'Completed' : 'Not completed'}`}
+                  className={`text-left w-full cursor-pointer rounded-xl p-4 border transition-all duration-200 flex items-start space-x-3 focus:outline-none focus:ring-2 focus:ring-[#c5a059]/50 ${
                     isDone
-                      ? 'bg-emerald-50/50 border-emerald-300 text-emerald-900'
-                      : 'bg-brand-background border-brand-border hover:border-brand-primary/40'
+                      ? 'bg-[#0d2218] border-emerald-500/40 text-emerald-300'
+                      : 'bg-[#0d1015] border-[#252c3c] hover:border-[#c5a059]/40'
                   }`}
                 >
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 transition-colors ${
-                    isDone ? 'bg-emerald-600 text-white' : 'border border-brand-muted text-transparent'
+                    isDone ? 'bg-emerald-500 text-stone-950 font-bold' : 'border border-stone-500 text-transparent'
                   }`}>
                     ✓
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-brand-secondary">{step.title}</h4>
-                    <p className="text-xs text-brand-muted mt-0.5">{step.desc}</p>
+                    <h4 className="text-sm font-bold text-stone-100">{step.title}</h4>
+                    <p className="text-xs text-stone-400 mt-0.5">{step.desc}</p>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -153,8 +157,8 @@ const LearningHub = () => {
 
           {/* Search Box */}
           <div className="relative min-w-[240px] sm:min-w-[280px]">
-            <Search className="w-4 h-4 text-brand-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
+            <Search className="w-4 h-4 text-brand-muted absolute left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+            <SmoothInput
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

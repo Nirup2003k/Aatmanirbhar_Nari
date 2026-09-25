@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Store, ChevronRight, ShieldCheck, Building2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Store, ChevronRight, ShieldCheck, Building2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import Button from '../../../components/common/Button';
+import ReportModal from '../../../components/common/ReportModal';
 
 const BusinessHeader = ({ business }) => {
   const { user } = useAuth();
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const categoryName = business.category;
 
   const isAvailable = Array.isArray(business.availability)
@@ -21,6 +23,14 @@ const BusinessHeader = ({ business }) => {
 
   return (
     <div className="mb-8">
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        targetType="business"
+        targetId={business.id}
+        targetName={business.businessName}
+      />
+
       {isOwner && (
         <div className="mb-6 p-4 bg-brand-primary/10 border border-brand-primary/30 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
           <div className="flex items-center space-x-3">
@@ -90,6 +100,16 @@ const BusinessHeader = ({ business }) => {
             >
               {availabilityText}
             </span>
+            {!isOwner && (
+              <button
+                onClick={() => setIsReportModalOpen(true)}
+                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-surface/90 hover:bg-brand-surface text-amber-300 border border-amber-500/30 transition-colors shadow-xs cursor-pointer"
+                title="Report this business"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 mr-1 text-amber-400" />
+                Report
+              </button>
+            )}
           </div>
         </div>
 

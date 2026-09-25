@@ -18,6 +18,7 @@ import {
   FileText,
   CheckCircle,
   XCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   getAdminStats,
@@ -28,6 +29,8 @@ import {
   getBusinessVerifications,
   approveBusinessVerification,
   rejectBusinessVerification,
+  getAdminReports,
+  updateAdminReportStatus,
 } from '../../services/api';
 import { getCategoryGuidance } from '../../constants/verificationGuidance';
 import Button from '../../components/common/Button';
@@ -37,49 +40,49 @@ const renderOrderStatusBadge = (status) => {
   switch (status) {
     case 'PENDING':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-amber-300 bg-amber-950/80 border border-amber-500/40 px-2.5 py-0.5 rounded-full">
           Pending
         </span>
       );
     case 'ACCEPTED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-blue-800 bg-blue-100 border border-blue-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-sky-300 bg-sky-950/80 border border-sky-500/40 px-2.5 py-0.5 rounded-full">
           Accepted
         </span>
       );
     case 'PREPARING':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-purple-800 bg-purple-100 border border-purple-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-purple-300 bg-purple-950/80 border border-purple-500/40 px-2.5 py-0.5 rounded-full">
           Preparing
         </span>
       );
     case 'READY':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-teal-800 bg-teal-100 border border-teal-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-teal-300 bg-teal-950/80 border border-teal-500/40 px-2.5 py-0.5 rounded-full">
           Ready
         </span>
       );
     case 'COMPLETED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
           Completed
         </span>
       );
     case 'REJECTED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-red-800 bg-red-100 border border-red-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-red-300 bg-red-950/80 border border-red-500/40 px-2.5 py-0.5 rounded-full">
           Rejected
         </span>
       );
     case 'CANCELLED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-gray-700 bg-gray-100 border border-gray-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-stone-400 bg-stone-900/90 border border-stone-700/50 px-2.5 py-0.5 rounded-full">
           Cancelled
         </span>
       );
     default:
       return (
-        <span className="inline-flex items-center text-xs font-bold text-gray-700 bg-gray-100 border border-gray-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-stone-400 bg-stone-900/90 border border-stone-700/50 px-2.5 py-0.5 rounded-full">
           {status}
         </span>
       );
@@ -91,31 +94,31 @@ const renderInquiryStatusBadge = (status) => {
   switch (status) {
     case 'PENDING':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-amber-300 bg-amber-950/80 border border-amber-500/40 px-2.5 py-0.5 rounded-full">
           Pending
         </span>
       );
     case 'ACCEPTED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-blue-800 bg-blue-100 border border-blue-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-sky-300 bg-sky-950/80 border border-sky-500/40 px-2.5 py-0.5 rounded-full">
           Accepted
         </span>
       );
     case 'REJECTED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-red-800 bg-red-100 border border-red-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-red-300 bg-red-950/80 border border-red-500/40 px-2.5 py-0.5 rounded-full">
           Rejected
         </span>
       );
     case 'COMPLETED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
           Completed
         </span>
       );
     default:
       return (
-        <span className="inline-flex items-center text-xs font-bold text-gray-700 bg-gray-100 border border-gray-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-stone-400 bg-stone-900/90 border border-stone-700/50 px-2.5 py-0.5 rounded-full">
           {status}
         </span>
       );
@@ -127,25 +130,25 @@ const renderRoleBadge = (role) => {
   switch (role) {
     case 'ADMIN':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-purple-800 bg-purple-100 border border-purple-300 px-2 py-0.5 rounded">
+        <span className="inline-flex items-center text-xs font-bold text-purple-300 bg-purple-950/80 border border-purple-500/40 px-2 py-0.5 rounded">
           ADMIN
         </span>
       );
     case 'ENTREPRENEUR':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/30 px-2 py-0.5 rounded">
+        <span className="inline-flex items-center text-xs font-bold text-[#c5a059] bg-[#c5a059]/15 border border-[#c5a059]/30 px-2 py-0.5 rounded">
           ENTREPRENEUR
         </span>
       );
     case 'CUSTOMER':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+        <span className="inline-flex items-center text-xs font-bold text-sky-300 bg-sky-950/80 border border-sky-500/40 px-2 py-0.5 rounded">
           CUSTOMER
         </span>
       );
     default:
       return (
-        <span className="inline-flex items-center text-xs font-bold text-gray-700 bg-gray-100 border border-gray-300 px-2 py-0.5 rounded">
+        <span className="inline-flex items-center text-xs font-bold text-stone-400 bg-stone-900/90 border border-stone-700/50 px-2 py-0.5 rounded">
           {role}
         </span>
       );
@@ -156,25 +159,25 @@ const renderVerificationStatusBadge = (status) => {
   switch (status) {
     case 'PENDING':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-amber-300 bg-amber-950/80 border border-amber-500/40 px-2.5 py-0.5 rounded-full">
           Pending
         </span>
       );
     case 'APPROVED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
           Approved
         </span>
       );
     case 'REJECTED':
       return (
-        <span className="inline-flex items-center text-xs font-bold text-red-800 bg-red-100 border border-red-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-red-300 bg-red-950/80 border border-red-500/40 px-2.5 py-0.5 rounded-full">
           Rejected
         </span>
       );
     default:
       return (
-        <span className="inline-flex items-center text-xs font-bold text-gray-700 bg-gray-100 border border-gray-300 px-2.5 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-xs font-bold text-stone-400 bg-stone-900/90 border border-stone-700/50 px-2.5 py-0.5 rounded-full">
           {status}
         </span>
       );
@@ -239,6 +242,48 @@ const AdminDashboard = () => {
   const [rejectionReasonInput, setRejectionReasonInput] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
   const [actionError, setActionError] = useState('');
+
+  // Reports State
+  const [reports, setReports] = useState([]);
+  const [reportStatusFilter, setReportStatusFilter] = useState('ALL');
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState(null);
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [updatingReportId, setUpdatingReportId] = useState(null);
+
+  const fetchReports = useCallback(async (statusFilter) => {
+    setReportsLoading(true);
+    setReportsError(null);
+    try {
+      const data = await getAdminReports(statusFilter);
+      setReports(data || []);
+    } catch (err) {
+      console.error('Error fetching reports:', err);
+      setReportsError(err.message || 'Failed to load reports.');
+    } finally {
+      setReportsLoading(false);
+    }
+  }, []);
+
+  const handleUpdateReportStatus = async (reportId, newStatus) => {
+    setUpdatingReportId(reportId);
+    setActionError('');
+    setActionSuccess('');
+    try {
+      const res = await updateAdminReportStatus(reportId, newStatus);
+      showSuccessNotice(res.message || 'Report status updated successfully.');
+      setReports((prev) =>
+        prev.map((r) => (r.id === reportId ? { ...r, status: newStatus } : r))
+      );
+      if (selectedReport && selectedReport.id === reportId) {
+        setSelectedReport((prev) => (prev ? { ...prev, status: newStatus } : null));
+      }
+    } catch (err) {
+      showErrorNotice(err.message || 'Failed to update report status.');
+    } finally {
+      setUpdatingReportId(null);
+    }
+  };
 
   const fetchVerifications = useCallback(async (statusFilter) => {
     setVerificationsLoading(true);
@@ -404,6 +449,26 @@ const AdminDashboard = () => {
     }
   }, [activeTab, verificationStatusFilter, fetchVerifications]);
 
+  useEffect(() => {
+    if (activeTab === 'reports') {
+      fetchReports(reportStatusFilter);
+    }
+  }, [activeTab, reportStatusFilter, fetchReports]);
+
+  // Escape key handler for open modals
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (selectedOrder) setSelectedOrder(null);
+        else if (selectedInquiry) setSelectedInquiry(null);
+        else if (selectedVerification) setSelectedVerification(null);
+        else if (selectedReport) setSelectedReport(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedOrder, selectedInquiry, selectedVerification, selectedReport]);
+
   // Refresh current view
   const handleRefreshCurrent = () => {
     fetchStats();
@@ -412,6 +477,7 @@ const AdminDashboard = () => {
     if (activeTab === 'businesses') fetchBusinesses();
     if (activeTab === 'orders') fetchOrders(orderStatusFilter);
     if (activeTab === 'inquiries') fetchInquiries(inquiryStatusFilter);
+    if (activeTab === 'reports') fetchReports(reportStatusFilter);
   };
 
   return (
@@ -453,10 +519,12 @@ const AdminDashboard = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="border-b border-brand-border flex overflow-x-auto space-x-2 pb-1">
+        <nav aria-label="Admin dashboard section navigation" className="border-b border-brand-border flex overflow-x-auto space-x-2 pb-2 scroll-hint">
           <button
+            type="button"
             onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors ${
+            aria-current={activeTab === 'overview' ? 'page' : undefined}
+            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'overview'
                 ? 'bg-brand-surface text-brand-primary border-t-2 border-x border-b-0 border-brand-primary shadow-xs'
                 : 'text-brand-text hover:text-brand-primary hover:bg-brand-surface/50'
@@ -467,8 +535,10 @@ const AdminDashboard = () => {
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('verifications')}
-            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors ${
+            aria-current={activeTab === 'verifications' ? 'page' : undefined}
+            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'verifications'
                 ? 'bg-brand-surface text-brand-primary border-t-2 border-x border-b-0 border-brand-primary shadow-xs'
                 : 'text-brand-text hover:text-brand-primary hover:bg-brand-surface/50'
@@ -484,8 +554,10 @@ const AdminDashboard = () => {
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('users')}
-            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors ${
+            aria-current={activeTab === 'users' ? 'page' : undefined}
+            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'users'
                 ? 'bg-brand-surface text-brand-primary border-t-2 border-x border-b-0 border-brand-primary shadow-xs'
                 : 'text-brand-text hover:text-brand-primary hover:bg-brand-surface/50'
@@ -501,8 +573,10 @@ const AdminDashboard = () => {
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('businesses')}
-            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors ${
+            aria-current={activeTab === 'businesses' ? 'page' : undefined}
+            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'businesses'
                 ? 'bg-brand-surface text-brand-primary border-t-2 border-x border-b-0 border-brand-primary shadow-xs'
                 : 'text-brand-text hover:text-brand-primary hover:bg-brand-surface/50'
@@ -518,8 +592,10 @@ const AdminDashboard = () => {
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors ${
+            aria-current={activeTab === 'orders' ? 'page' : undefined}
+            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'orders'
                 ? 'bg-brand-surface text-brand-primary border-t-2 border-x border-b-0 border-brand-primary shadow-xs'
                 : 'text-brand-text hover:text-brand-primary hover:bg-brand-surface/50'
@@ -535,8 +611,10 @@ const AdminDashboard = () => {
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('inquiries')}
-            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors ${
+            aria-current={activeTab === 'inquiries' ? 'page' : undefined}
+            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'inquiries'
                 ? 'bg-brand-surface text-brand-primary border-t-2 border-x border-b-0 border-brand-primary shadow-xs'
                 : 'text-brand-text hover:text-brand-primary hover:bg-brand-surface/50'
@@ -550,7 +628,21 @@ const AdminDashboard = () => {
               </span>
             )}
           </button>
-        </div>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('reports')}
+            aria-current={activeTab === 'reports' ? 'page' : undefined}
+            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors cursor-pointer ${
+              activeTab === 'reports'
+                ? 'bg-brand-surface text-brand-primary border-t-2 border-x border-b-0 border-brand-primary shadow-xs'
+                : 'text-brand-text hover:text-brand-primary hover:bg-brand-surface/50'
+            }`}
+          >
+            <AlertTriangle className="w-4 h-4 mr-2 text-amber-400" />
+            Reports
+          </button>
+        </nav>
 
         {/* SECTION A: OVERVIEW */}
         {activeTab === 'overview' && (
@@ -1137,12 +1229,112 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* TAB 6: REPORTS */}
+        {activeTab === 'reports' && (
+          <div className="bg-brand-surface border border-brand-border rounded-xl p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-brand-border">
+              <div>
+                <h2 className="text-xl font-bold text-brand-secondary flex items-center">
+                  <AlertTriangle className="w-5 h-5 text-amber-400 mr-2" />
+                  Customer Reports Oversight
+                </h2>
+                <p className="text-xs text-brand-muted">Review and manage platform complaints and report tickets.</p>
+              </div>
+
+              {/* Status Filters */}
+              <div className="flex items-center space-x-2 bg-brand-background border border-brand-border p-1 rounded-xl">
+                {['ALL', 'OPEN', 'REVIEWED', 'RESOLVED'].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => {
+                      setReportStatusFilter(st);
+                      fetchReports(st);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                      reportStatusFilter === st
+                        ? 'bg-brand-primary text-white shadow-xs'
+                        : 'text-brand-muted hover:text-brand-secondary hover:bg-brand-surface'
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {reportsLoading ? (
+              <div className="py-12 text-center">
+                <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                <p className="text-xs text-brand-muted">Loading reports...</p>
+              </div>
+            ) : reportsError ? (
+              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-xs text-red-400 text-center">
+                {reportsError}
+              </div>
+            ) : reports.length === 0 ? (
+              <div className="py-12 text-center bg-brand-background/50 rounded-xl border border-dashed border-brand-border">
+                <AlertTriangle className="w-8 h-8 text-brand-muted mx-auto mb-2 opacity-50" />
+                <p className="text-sm font-semibold text-brand-secondary mb-1">No reports found.</p>
+                <p className="text-xs text-brand-muted">No reports match the selected status filter.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-brand-border text-xs font-bold text-brand-muted uppercase tracking-wider bg-brand-background/60">
+                      <th className="py-3.5 px-4">Report ID</th>
+                      <th className="py-3.5 px-4">Reason</th>
+                      <th className="py-3.5 px-4">Target Type & Info</th>
+                      <th className="py-3.5 px-4">Reporter</th>
+                      <th className="py-3.5 px-4">Status</th>
+                      <th className="py-3.5 px-4">Date</th>
+                      <th className="py-3.5 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-brand-border text-sm">
+                    {reports.map((rpt) => {
+                      let targetInfo = 'N/A';
+                      if (rpt.business) targetInfo = `Business: ${rpt.business.businessName}`;
+                      else if (rpt.order) targetInfo = `Order #${rpt.order.id}`;
+                      else if (rpt.inquiry) targetInfo = `Inquiry #${rpt.inquiry.id}`;
+
+                      return (
+                        <tr key={rpt.id} className="hover:bg-brand-background/50 transition-colors">
+                          <td className="py-3.5 px-4 font-mono text-xs font-semibold text-brand-muted">#R-{rpt.id}</td>
+                          <td className="py-3.5 px-4 font-bold text-brand-secondary">{rpt.reason}</td>
+                          <td className="py-3.5 px-4 text-xs font-medium text-brand-primary">{targetInfo}</td>
+                          <td className="py-3.5 px-4">
+                            <div className="font-semibold text-brand-secondary">{rpt.reporter?.name || 'Customer'}</div>
+                            <div className="text-xs text-brand-muted">{rpt.reporter?.email}</div>
+                          </td>
+                          <td className="py-3.5 px-4">{renderReportStatusBadge(rpt.status)}</td>
+                          <td className="py-3.5 px-4 text-xs text-brand-muted">{formatDate(rpt.createdAt)}</td>
+                          <td className="py-3.5 px-4 text-right">
+                            <button
+                              onClick={() => setSelectedReport(rpt)}
+                              className="inline-flex items-center text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 px-2.5 py-1 rounded-lg transition-colors"
+                              title="Inspect Report Details"
+                            >
+                              <Eye className="w-3.5 h-3.5 mr-1" />
+                              Inspect
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
 
       {/* READ-ONLY ORDER DETAIL MODAL */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-brand-surface border border-brand-border rounded-xl max-w-xl w-full p-6 shadow-xl relative my-8">
+          <div role="dialog" aria-modal="true" aria-labelledby="admin-order-modal-title" className="bg-brand-surface border border-brand-border rounded-xl max-w-xl w-full p-6 shadow-xl relative my-8 max-h-[85vh] overflow-y-auto">
             <button
               onClick={() => setSelectedOrder(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-brand-muted hover:text-brand-secondary hover:bg-brand-background transition-colors"
@@ -1154,7 +1346,7 @@ const AdminDashboard = () => {
             <div className="flex items-center space-x-2 border-b border-brand-border pb-4 mb-4">
               <Package className="w-6 h-6 text-brand-primary" />
               <div>
-                <h3 className="text-lg font-bold text-brand-secondary">Order Inspection #{selectedOrder.id}</h3>
+                <h3 id="admin-order-modal-title" className="text-lg font-bold text-brand-secondary">Order Inspection #{selectedOrder.id}</h3>
                 <p className="text-xs text-brand-muted">Read-Only Platform Order View</p>
               </div>
             </div>
@@ -1212,7 +1404,7 @@ const AdminDashboard = () => {
       {/* READ-ONLY INQUIRY DETAIL MODAL */}
       {selectedInquiry && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-brand-surface border border-brand-border rounded-xl max-w-xl w-full p-6 shadow-xl relative my-8">
+          <div role="dialog" aria-modal="true" aria-labelledby="admin-inquiry-modal-title" className="bg-brand-surface border border-brand-border rounded-xl max-w-xl w-full p-6 shadow-xl relative my-8 max-h-[85vh] overflow-y-auto">
             <button
               onClick={() => setSelectedInquiry(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-brand-muted hover:text-brand-secondary hover:bg-brand-background transition-colors"
@@ -1224,7 +1416,7 @@ const AdminDashboard = () => {
             <div className="flex items-center space-x-2 border-b border-brand-border pb-4 mb-4">
               <MessageSquare className="w-6 h-6 text-brand-primary" />
               <div>
-                <h3 className="text-lg font-bold text-brand-secondary">Inquiry Inspection #{selectedInquiry.id}</h3>
+                <h3 id="admin-inquiry-modal-title" className="text-lg font-bold text-brand-secondary">Inquiry Inspection #{selectedInquiry.id}</h3>
                 <p className="text-xs text-brand-muted">Read-Only Platform Inquiry View</p>
               </div>
             </div>
@@ -1280,7 +1472,7 @@ const AdminDashboard = () => {
       {/* VERIFICATION DETAIL & APPROVAL/REJECTION MODAL */}
       {selectedVerification && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-brand-surface border border-brand-border rounded-2xl max-w-2xl w-full p-6 shadow-xl relative my-8 max-h-[90vh] overflow-y-auto">
+          <div role="dialog" aria-modal="true" aria-labelledby="admin-verification-modal-title" className="bg-brand-surface border border-brand-border rounded-2xl max-w-2xl w-full p-6 shadow-xl relative my-8 max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedVerification(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-brand-muted hover:text-brand-secondary hover:bg-brand-background transition-colors"
@@ -1292,7 +1484,7 @@ const AdminDashboard = () => {
             <div className="flex items-center space-x-2 border-b border-brand-border pb-4 mb-4">
               <Shield className="w-6 h-6 text-brand-primary" />
               <div>
-                <h3 className="text-lg font-bold text-brand-secondary">
+                <h3 id="admin-verification-modal-title" className="text-lg font-bold text-brand-secondary">
                   Verification Review: {selectedVerification.businessName}
                 </h3>
                 <p className="text-xs text-brand-muted">Review submitted details and verify women-led micro-business</p>
@@ -1402,6 +1594,105 @@ const AdminDashboard = () => {
                     Approve Business
                   </Button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REPORT INSPECTION & STATUS CHANGE MODAL */}
+      {selectedReport && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div role="dialog" aria-modal="true" aria-labelledby="admin-report-modal-title" className="bg-brand-surface border border-brand-border rounded-xl max-w-lg w-full p-6 shadow-xl relative my-8 max-h-[85vh] overflow-y-auto">
+            <button
+              onClick={() => setSelectedReport(null)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-brand-muted hover:text-brand-secondary hover:bg-brand-background transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center space-x-2 border-b border-brand-border pb-4 mb-4">
+              <AlertTriangle className="w-5 h-5 text-amber-400" />
+              <div>
+                <h3 id="admin-report-modal-title" className="text-lg font-bold text-brand-secondary">Report Inspection #R-{selectedReport.id}</h3>
+                <p className="text-xs text-brand-muted">Platform Complaint Details & Status Action</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-xs text-brand-text">
+              <div className="grid grid-cols-2 gap-3 bg-brand-background p-3.5 rounded-xl border border-brand-border">
+                <div>
+                  <span className="font-bold text-brand-secondary block uppercase tracking-wider text-[10px]">Current Status:</span>
+                  <div className="mt-1">{renderReportStatusBadge(selectedReport.status)}</div>
+                </div>
+                <div>
+                  <span className="font-bold text-brand-secondary block uppercase tracking-wider text-[10px]">Reported Date:</span>
+                  <span className="mt-1 block text-brand-muted">{formatDate(selectedReport.createdAt)}</span>
+                </div>
+                <div>
+                  <span className="font-bold text-brand-secondary block uppercase tracking-wider text-[10px]">Reason:</span>
+                  <span className="font-bold text-amber-300">{selectedReport.reason}</span>
+                </div>
+                <div>
+                  <span className="font-bold text-brand-secondary block uppercase tracking-wider text-[10px]">Reporter Info:</span>
+                  <span className="font-medium text-brand-secondary block">{selectedReport.reporter?.name}</span>
+                  <span className="text-brand-muted">{selectedReport.reporter?.email}</span>
+                </div>
+              </div>
+
+              <div>
+                <span className="font-bold text-brand-secondary block uppercase tracking-wider text-[10px] mb-1">Target Object Details:</span>
+                <div className="bg-brand-background p-3 rounded-lg border border-brand-border text-brand-secondary font-medium">
+                  {selectedReport.business && <div>Business: <strong>{selectedReport.business.businessName}</strong> ({selectedReport.business.category})</div>}
+                  {selectedReport.order && <div>Order: <strong>#{selectedReport.order.id}</strong> (Total: ₹{Number(selectedReport.order.totalAmount).toFixed(2)}, Status: {selectedReport.order.status})</div>}
+                  {selectedReport.inquiry && <div>Inquiry: <strong>#{selectedReport.inquiry.id}</strong> (Message: "{selectedReport.inquiry.message}")</div>}
+                </div>
+              </div>
+
+              <div>
+                <span className="font-bold text-brand-secondary block uppercase tracking-wider text-[10px] mb-1">Description / Additional Notes:</span>
+                <p className="bg-brand-background p-3 rounded-lg border border-brand-border text-brand-secondary min-h-[60px] whitespace-pre-wrap">
+                  {selectedReport.description || 'No additional description provided.'}
+                </p>
+              </div>
+
+              {/* Status Action Controls */}
+              <div className="pt-3 border-t border-brand-border space-y-2">
+                <span className="font-bold text-brand-secondary block uppercase tracking-wider text-[10px]">
+                  Admin Status Transition:
+                </span>
+
+                {selectedReport.status === 'RESOLVED' ? (
+                  <div className="bg-emerald-950/40 border border-emerald-500/30 p-3 rounded-lg text-emerald-300 text-xs text-center font-semibold">
+                    This report has been RESOLVED (Terminal State).
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    {selectedReport.status === 'OPEN' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={updatingReportId === selectedReport.id}
+                        onClick={() => handleUpdateReportStatus(selectedReport.id, 'REVIEWED')}
+                        className="text-xs border-sky-500/40 text-sky-300 hover:bg-sky-950/50"
+                      >
+                        Mark as REVIEWED
+                      </Button>
+                    )}
+                    {(selectedReport.status === 'OPEN' || selectedReport.status === 'REVIEWED') && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        disabled={updatingReportId === selectedReport.id}
+                        onClick={() => handleUpdateReportStatus(selectedReport.id, 'RESOLVED')}
+                        className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        Mark as RESOLVED
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

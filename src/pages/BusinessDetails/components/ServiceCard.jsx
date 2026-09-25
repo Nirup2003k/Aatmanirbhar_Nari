@@ -28,6 +28,20 @@ const ServiceCard = ({ service, businessId, businessName, onInquire }) => {
   return (
     <div className="bg-brand-background border border-brand-border rounded-xl p-5 shadow-sm flex flex-col justify-between h-full hover:border-brand-primary/40 transition-all duration-200">
       <div>
+        {service.imageUrl && (
+          <div className="mb-3.5 overflow-hidden rounded-lg border border-brand-border/60 bg-brand-surface h-44 flex items-center justify-center">
+            <img
+              src={service.imageUrl}
+              alt={service.name}
+              loading="lazy"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.parentElement.style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-3 mb-2">
           <h3 className="text-lg font-bold text-brand-secondary">
             {service.name}
@@ -96,7 +110,7 @@ const ServiceCard = ({ service, businessId, businessName, onInquire }) => {
           variant="outline"
           size="sm"
           onClick={() => onInquire(service)}
-          className="w-full justify-center bg-white text-xs"
+          className="w-full justify-center text-xs"
         >
           Inquire About This Service
         </Button>
