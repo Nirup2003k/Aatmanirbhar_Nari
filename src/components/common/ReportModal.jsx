@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Loader2, CheckCircle2 } from 'lucide-react';
 import Button from './Button';
 import { createReport } from '../../services/api';

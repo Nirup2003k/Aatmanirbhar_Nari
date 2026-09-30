@@ -1,26 +1,89 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, Calendar, User, Share2, CheckCircle2, BookOpen, Lightbulb, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, User, Share2, CheckCircle2, BookOpen, Lightbulb, ChevronRight, AlertCircle } from 'lucide-react';
 import Button from '../../components/common/Button';
-import { learningResources } from '../../data/mockData';
+import { learningResources as fallbackResources } from '../../data/mockData';
+import { getLearningResourceBySlug, getLearningResources } from '../../services/api';
 
 const LearningArticle = () => {
   const { id } = useParams();
-  const article = learningResources.find((r) => r.id === Number(id)) || learningResources[0];
+  const [article, setArticle] = useState(null);
+  const [otherArticles, setOtherArticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchArticleData = useCallback(async () => {
+    if (!id) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [articleRes, listRes] = await Promise.all([
+        getLearningResourceBySlug(id),
+        getLearningResources(),
+      ]);
+
+      const foundArticle = articleRes?.data || null;
+      setArticle(foundArticle);
+
+      const allList = listRes?.data || fallbackResources;
+      const related = allList.filter((r) => String(r.id) !== String(id) && r.slug !== id).slice(0, 3);
+      setOtherArticles(related);
+    } catch (err) {
+      console.error(`Error fetching learning article ${id}:`, err);
+      // Fallback matching by ID or slug if offline
+      const fallback = fallbackResources.find((r) => String(r.id) === String(id) || r.slug === id) || fallbackResources[0];
+      setArticle(fallback);
+      setOtherArticles(fallbackResources.filter((r) => r.id !== fallback.id).slice(0, 3));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchArticleData();
+  }, [fetchArticleData]);
 
   const handleShare = () => {
-    if (navigator.share) {
+    if (article && navigator.share) {
       navigator.share({
         title: article.title,
         url: window.location.href,
       }).catch(() => {});
-    } else {
+    } else if (article) {
       navigator.clipboard.writeText(window.location.href);
       alert('Article link copied to clipboard!');
     }
   };
 
-  const otherArticles = learningResources.filter((r) => r.id !== article.id).slice(0, 3);
+  if (isLoading) {
+    return (
+      <div className="bg-brand-background min-h-screen py-16 flex flex-col items-center justify-center">
+        <div className="bg-brand-surface border border-brand-border rounded-xl p-10 max-w-md w-full text-center shadow-sm">
+          <div className="w-10 h-10 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <h3 className="text-base font-bold text-brand-secondary mb-1">Loading learning guide...</h3>
+          <p className="text-xs text-brand-muted">Fetching guide content from database.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !article) {
+    return (
+      <div className="bg-brand-background min-h-screen py-16 flex flex-col items-center justify-center px-4">
+        <div className="bg-brand-surface border border-brand-border rounded-xl p-8 max-w-md w-full text-center shadow-sm">
+          <AlertCircle className="w-10 h-10 text-brand-muted mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-brand-secondary mb-2">Guide Not Found</h2>
+          <p className="text-xs text-brand-muted mb-6">The requested learning resource could not be found or is not published.</p>
+          <Link to="/learning">
+            <Button variant="primary" size="sm">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Learning Hub
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-brand-background min-h-screen py-10">

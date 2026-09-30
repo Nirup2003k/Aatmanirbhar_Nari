@@ -93,6 +93,7 @@ const register = async (req, res, next) => {
 
     const passwordHash = await argon2.hash(password);
 
+    const now = new Date();
     const newUser = await prisma.user.create({
       data: {
         name: name.trim(),
@@ -100,6 +101,7 @@ const register = async (req, res, next) => {
         phone: (phone || '').trim(),
         passwordHash,
         role: targetRole,
+        lastActiveAt: now,
       },
       select: {
         id: true,
@@ -157,6 +159,16 @@ const login = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message: 'Invalid email or password',
+      });
+    }
+
+    // Record activity timestamp on login for non-admin users
+    if (user.role !== 'ADMIN') {
+      prisma.user.update({
+        where: { id: user.id },
+        data: { lastActiveAt: new Date() },
+      }).catch((err) => {
+        console.error('Failed to update lastActiveAt on login:', err.message);
       });
     }
 

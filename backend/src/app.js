@@ -8,6 +8,8 @@ const entrepreneurRoutes = require('./routes/entrepreneurRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const learningRoutes = require('./routes/learningRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -51,6 +53,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/entrepreneur', entrepreneurRoutes);
 app.use('/api/businesses', businessRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/learning', learningRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);

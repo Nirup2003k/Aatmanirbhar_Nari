@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Building, MapPin, Tag, CheckCircle2, ArrowRight, ArrowLeft, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import SmoothInput from '../../components/common/SmoothInput';
 import { useAuth } from '../../context/AuthContext';
-
+import { getCategories } from '../../services/api';
 import { OFFICIAL_CATEGORIES } from '../../constants/categories';
 
 const Register = () => {
@@ -13,6 +13,21 @@ const Register = () => {
 
   const [step, setStep] = useState(1);
   const [role, setRole] = useState('ENTREPRENEUR'); // CUSTOMER or ENTREPRENEUR only
+  const [categoriesList, setCategoriesList] = useState(OFFICIAL_CATEGORIES);
+
+  useEffect(() => {
+    const fetchRegCategories = async () => {
+      try {
+        const res = await getCategories();
+        if (res?.data && res.data.length > 0) {
+          setCategoriesList(res.data);
+        }
+      } catch (err) {
+        console.error('Error fetching categories in Register:', err);
+      }
+    };
+    fetchRegCategories();
+  }, []);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -351,7 +366,7 @@ const Register = () => {
                   Craft / Industry Category <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
-                  {OFFICIAL_CATEGORIES.map((cat) => (
+                  {categoriesList.map((cat) => (
                     <button
                       key={cat.id}
                       type="button"

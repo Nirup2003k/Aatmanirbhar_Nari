@@ -49,6 +49,7 @@ model User {
   phone              String
   passwordHash       String
   role               Role       @default(CUSTOMER)
+  lastActiveAt       DateTime?
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
   businesses         Business[]
@@ -56,12 +57,16 @@ model User {
   orders             Order[]
   reports            Report[]
   verifiedBusinesses Business[] @relation("VerifiedBusinesses")
+
+  @@index([lastActiveAt])
+  @@index([role])
 }
 
 model Business {
   id                  Int                    @id @default(autoincrement())
   businessName        String
   category            String
+  categoryId          Int?
   description         String                 @db.Text
   ownerName           String
   ownerId             Int?
@@ -78,6 +83,7 @@ model Business {
   updatedAt           DateTime               @updatedAt
   owner               User?                  @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   verifiedBy          User?                  @relation("VerifiedBusinesses", fields: [verifiedById], references: [id], onDelete: SetNull)
+  categoryRef         Category?              @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   services            Service[]
   availability        BusinessAvailability[]
   inquiries           Inquiry[]
@@ -86,6 +92,39 @@ model Business {
 
   @@index([ownerId])
   @@index([verificationStatus])
+  @@index([categoryId])
+}
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  slug        String     @unique
+  description String?    @db.Text
+  icon        String?    @default("Store")
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  businesses  Business[]
+}
+
+model LearningContent {
+  id            Int      @id @default(autoincrement())
+  title         String
+  slug          String   @unique
+  category      String
+  description   String   @db.Text
+  summary       String?  @db.Text
+  readTime      String   @default("5 min read")
+  author        String?  @default("Aatmanirbhar Nari Mentorship Desk")
+  publishedDate String?
+  sections      Json?
+  keyTakeaways  Json?
+  isPublished   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category])
+  @@index([isPublished])
 }
 
 model Service {

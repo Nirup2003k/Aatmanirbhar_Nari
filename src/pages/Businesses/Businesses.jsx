@@ -5,7 +5,7 @@ import BusinessSearch from './components/BusinessSearch';
 import BusinessFilters from './components/BusinessFilters';
 import BusinessResults from './components/BusinessResults';
 import Button from '../../components/common/Button';
-import { getBusinesses } from '../../services/api';
+import { getBusinesses, getCategories } from '../../services/api';
 
 const INITIAL_PAGE_SIZE = 6;
 const DEFAULT_LOCATIONS = [
@@ -33,8 +33,23 @@ const Businesses = () => {
 
   // API Data & Async States
   const [apiBusinesses, setApiBusinesses] = useState([]);
+  const [dbCategories, setDbCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCategoriesList = async () => {
+      try {
+        const res = await getCategories();
+        if (res?.data) {
+          setDbCategories(res.data);
+        }
+      } catch (err) {
+        console.error('Error fetching categories in Businesses:', err);
+      }
+    };
+    fetchCategoriesList();
+  }, []);
 
   // Sync state with URL params when URL changes
   useEffect(() => {
@@ -239,6 +254,7 @@ const Businesses = () => {
             hasActiveFilters={hasActiveFilters}
             isMobileOpen={isMobileFiltersOpen}
             setIsMobileOpen={setIsMobileFiltersOpen}
+            categoriesList={dbCategories}
           />
 
           {isLoading ? (

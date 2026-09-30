@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, BookOpen, Clock, ArrowRight, CheckCircle2, Lightbulb, Sparkles, Filter } from 'lucide-react';
 import Button from '../../components/common/Button';
 import SmoothInput from '../../components/common/SmoothInput';
-import { learningResources } from '../../data/mockData';
+import { learningResources as fallbackResources } from '../../data/mockData';
+import { getLearningResources } from '../../services/api';
 
 const CATEGORIES = ['All', 'Business Setup', 'Pricing & Finance', 'Marketing', 'Branding', 'Legal Basics'];
 
@@ -12,6 +13,26 @@ const LearningHub = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [completedSteps, setCompletedSteps] = useState([1]);
 
+  const [resources, setResources] = useState([]);
+
+  const fetchResources = useCallback(async () => {
+    try {
+      const res = await getLearningResources();
+      if (res?.data && res.data.length > 0) {
+        setResources(res.data);
+      } else {
+        setResources(fallbackResources);
+      }
+    } catch (err) {
+      console.error('Error fetching learning resources:', err);
+      setResources(fallbackResources);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchResources();
+  }, [fetchResources]);
+
   const toggleChecklistStep = (id) => {
     setCompletedSteps((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -19,18 +40,18 @@ const LearningHub = () => {
   };
 
   const filteredResources = useMemo(() => {
-    return learningResources.filter((res) => {
+    return resources.filter((res) => {
       const matchesCategory = selectedCategory === 'All' || res.category === selectedCategory;
       const matchesSearch =
         searchQuery.trim() === '' ||
         res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.category.toLowerCase().includes(searchQuery.toLowerCase());
+        (res.description && res.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (res.category && res.category.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [resources, selectedCategory, searchQuery]);
 
-  const featuredResource = learningResources[0];
+  const featuredResource = resources[0] || fallbackResources[0];
 
   return (
     <div className="bg-brand-background min-h-screen py-12">
@@ -68,7 +89,7 @@ const LearningHub = () => {
                 {featuredResource.summary || featuredResource.description}
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Link to={`/learning/${featuredResource.id}`}>
+                <Link to={`/learning/${featuredResource.slug || featuredResource.id}`}>
                   <button className="bg-[#c5a059] hover:bg-[#d4b068] text-stone-950 font-bold text-sm py-2.5 px-5 rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-md">
                     Read Full Roadmap
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -174,7 +195,7 @@ const LearningHub = () => {
             {filteredResources.map((resource) => (
               <Link
                 key={resource.id}
-                to={`/learning/${resource.id}`}
+                to={`/learning/${resource.slug || resource.id}`}
                 className="group block bg-brand-surface border border-brand-border rounded-xl p-6 shadow-sm hover:shadow-card-hover hover:border-brand-primary/40 transition-all duration-300 flex flex-col justify-between"
               >
                 <div>

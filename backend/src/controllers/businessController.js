@@ -34,10 +34,24 @@ const getAllBusinesses = async (req, res, next) => {
       });
     }
 
-    if (category && category.trim() !== '') {
-      whereConditions.push({
-        category: { contains: category.trim(), mode: 'insensitive' },
-      });
+    if (category && category.trim() !== '' && category.trim().toLowerCase() !== 'all') {
+      const catTerm = category.trim();
+      const numId = parseInt(catTerm, 10);
+      if (!isNaN(numId)) {
+        whereConditions.push({
+          OR: [
+            { categoryId: numId },
+            { category: { contains: catTerm, mode: 'insensitive' } },
+          ],
+        });
+      } else {
+        whereConditions.push({
+          OR: [
+            { category: { contains: catTerm, mode: 'insensitive' } },
+            { categoryRef: { name: { contains: catTerm, mode: 'insensitive' } } },
+          ],
+        });
+      }
     }
 
     if (availability && availability.trim() !== '') {

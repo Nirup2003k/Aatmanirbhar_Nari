@@ -1,11 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import CategoryCard from '../../../components/business/CategoryCard';
-import { categories } from '../../../data/mockData';
+import { OFFICIAL_CATEGORIES } from '../../../constants/categories';
+import { getCategories } from '../../../services/api';
 import Button from '../../../components/common/Button';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 const Categories = () => {
+  const [categoryList, setCategoryList] = useState(OFFICIAL_CATEGORIES);
+
+  useEffect(() => {
+    const fetchHomeCategories = async () => {
+      try {
+        const res = await getCategories();
+        if (res?.data && res.data.length > 0) {
+          setCategoryList(res.data);
+        }
+      } catch (err) {
+        console.error('Error fetching categories on home page:', err);
+      }
+    };
+    fetchHomeCategories();
+  }, []);
+
   return (
     <section className="bg-[#0d1015] py-20 border-b border-[#1b202c] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,7 +51,7 @@ const Categories = () => {
         
         {/* Responsive Grid with Visual Variety */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {categories.map((category) => (
+          {categoryList.map((category) => (
             <CategoryCard key={category.id} category={category} />
           ))}
         </div>

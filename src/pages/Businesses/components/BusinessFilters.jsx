@@ -1,7 +1,7 @@
 import React from 'react';
 import { Filter, X, RotateCcw } from 'lucide-react';
 import Button from '../../../components/common/Button';
-import { categories } from '../../../data/mockData';
+import { OFFICIAL_CATEGORIES } from '../../../constants/categories';
 
 const availabilityOptions = [
   { id: 'all', label: 'All' },
@@ -22,7 +22,9 @@ const BusinessFilters = ({
   hasActiveFilters,
   isMobileOpen,
   setIsMobileOpen,
+  categoriesList = [],
 }) => {
+  const activeCategoriesList = categoriesList.length > 0 ? categoriesList : OFFICIAL_CATEGORIES;
   const content = (
     <div className="space-y-6">
       {/* Header */}
@@ -60,20 +62,25 @@ const BusinessFilters = ({
           >
             All Categories
           </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setSelectedCategory(String(cat.id))}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                selectedCategory === String(cat.id)
-                  ? 'bg-[#c5a059]/15 text-[#c5a059] font-semibold border border-[#c5a059]/30'
-                  : 'text-stone-300 hover:bg-[#1d222e] hover:text-stone-100'
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
+          {activeCategoriesList.map((cat) => {
+            const isSelected =
+              selectedCategory === String(cat.id) ||
+              selectedCategory.toLowerCase() === cat.name.toLowerCase();
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedCategory(cat.name)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                  isSelected
+                    ? 'bg-[#c5a059]/15 text-[#c5a059] font-semibold border border-[#c5a059]/30'
+                    : 'text-stone-300 hover:bg-[#1d222e] hover:text-stone-100'
+                }`}
+              >
+                {cat.name}
+              </button>
+            );
+          })}
         </div>
       </div>
 

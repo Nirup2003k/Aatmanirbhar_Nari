@@ -9,6 +9,23 @@ const getJwtSecret = () => {
   return secret;
 };
 
+const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
+
+const updateLastActiveIfNeeded = (user) => {
+  if (!user || user.role === 'ADMIN') return;
+  const lastActive = user.lastActiveAt ? new Date(user.lastActiveAt).getTime() : 0;
+  if (Date.now() - lastActive > FIFTEEN_MINUTES_MS) {
+    const now = new Date();
+    user.lastActiveAt = now;
+    prisma.user.update({
+      where: { id: user.id },
+      data: { lastActiveAt: now },
+    }).catch((err) => {
+      console.error('Non-blocking lastActiveAt update failed:', err.message);
+    });
+  }
+};
+
 const authenticateToken = async (req, res, next) => {
   try {
     let token = req.cookies?.auth_token;
@@ -44,6 +61,7 @@ const authenticateToken = async (req, res, next) => {
         email: true,
         phone: true,
         role: true,
+        lastActiveAt: true,
       },
     });
 
@@ -53,6 +71,8 @@ const authenticateToken = async (req, res, next) => {
         message: 'User account no longer exists.',
       });
     }
+
+    updateLastActiveIfNeeded(user);
 
     req.user = user;
     next();
@@ -81,9 +101,11 @@ const optionalAuth = async (req, res, next) => {
             email: true,
             phone: true,
             role: true,
+            lastActiveAt: true,
           },
         });
         if (user) {
+          updateLastActiveIfNeeded(user);
           req.user = user;
         }
       } catch {

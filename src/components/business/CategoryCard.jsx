@@ -29,7 +29,7 @@ const CategoryCard = ({ category }) => {
 
   return (
     <Link 
-      to={`/businesses?category=${category.id}`}
+      to={`/businesses?category=${encodeURIComponent(category.name || category.id)}`}
       className="group relative flex flex-col bg-[#151922] border border-[#252a37] rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:border-[#c5a059]/50 transition-all duration-300 hover:-translate-y-1 h-full"
     >
       {/* Category Image Header */}

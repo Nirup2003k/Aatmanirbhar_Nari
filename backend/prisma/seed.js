@@ -320,9 +320,43 @@ async function main() {
   // Map to reuse user accounts for identical ownerNames
   const ownerToUserMap = new Map();
 
-  // 3. Upsert Entrepreneur Users and update/backfill Businesses safely
+  // 3. Seed/Upsert 7 Official Categories
+  const officialCategories = [
+    { name: 'Tiffin Services', slug: 'tiffin-services', description: 'Homemade, healthy, and hygienic daily meals delivered to you.', icon: 'ChefHat' },
+    { name: 'Tailoring & Boutique', slug: 'tailoring-boutique', description: 'Custom stitching, alterations, and beautiful ethnic wear.', icon: 'Scissors' },
+    { name: 'Beauty Services', slug: 'beauty-services', description: 'Professional salon services from the comfort of your home.', icon: 'Sparkles' },
+    { name: 'Handicrafts & Decor', slug: 'handicrafts-decor', description: 'Unique handmade decor, gifts, and traditional art pieces.', icon: 'Palette' },
+    { name: 'Catering & Food', slug: 'catering-food', description: 'Bulk food orders, event catering, and specialty delicacies.', icon: 'UtensilsCrossed' },
+    { name: 'Education & Tutoring', slug: 'education-tutoring', description: 'Private tuition, skill classes, and educational coaching.', icon: 'GraduationCap' },
+    { name: 'Other Services', slug: 'other-services', description: 'Various specialized services, home businesses, and custom support.', icon: 'Store' },
+  ];
+
+  const categoryMap = new Map();
+  for (const cat of officialCategories) {
+    const dbCat = await prisma.category.upsert({
+      where: { name: cat.name },
+      update: {
+        slug: cat.slug,
+        description: cat.description,
+        icon: cat.icon,
+        isActive: true,
+      },
+      create: {
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description,
+        icon: cat.icon,
+        isActive: true,
+      },
+    });
+    categoryMap.set(cat.name, dbCat);
+  }
+  console.log(`Seeded ${categoryMap.size} official categories.`);
+
+  // 4. Upsert Entrepreneur Users and update/backfill Businesses safely
   for (const item of seedData) {
     const ownerName = item.ownerName;
+    const categoryRecord = categoryMap.get(item.category);
 
     let entrepreneurUser = ownerToUserMap.get(ownerName);
 
@@ -353,11 +387,12 @@ async function main() {
     });
 
     if (existingBusiness) {
-      // Update ownerId without deleting or modifying services/availability
+      // Update ownerId & categoryId without deleting or modifying services/availability
       await prisma.business.update({
         where: { id: existingBusiness.id },
         data: {
           ownerId: entrepreneurUser.id,
+          categoryId: categoryRecord ? categoryRecord.id : existingBusiness.categoryId,
           verificationStatus: 'APPROVED',
           verifiedAt: new Date(),
           verificationDetails: 'Verified platform micro-enterprise.',
@@ -371,6 +406,7 @@ async function main() {
         data: {
           ...businessDetails,
           ownerId: entrepreneurUser.id,
+          categoryId: categoryRecord ? categoryRecord.id : null,
           verificationStatus: 'APPROVED',
           verifiedAt: new Date(),
           verificationDetails: 'Verified platform micro-enterprise.',
@@ -385,6 +421,208 @@ async function main() {
       console.log(`Created new business ID ${newBusiness.id} (${newBusiness.businessName}) -> ownerId: ${entrepreneurUser.id}`);
     }
   }
+
+  // Backfill categoryId for any remaining businesses missing categoryId
+  const unlinkedBusinesses = await prisma.business.findMany({
+    where: { categoryId: null },
+  });
+  for (const biz of unlinkedBusinesses) {
+    const matchedCat = categoryMap.get(biz.category);
+    if (matchedCat) {
+      await prisma.business.update({
+        where: { id: biz.id },
+        data: { categoryId: matchedCat.id },
+      });
+    }
+  }
+
+  // 5. Seed/Upsert 5 Official Learning Resources
+  const officialLearningResources = [
+    {
+      title: "Starting Your Home Business",
+      slug: "starting-your-home-business",
+      category: "Business Setup",
+      description: "Step-by-step roadmap to start operating your business safely and effectively from home.",
+      summary: "Starting a micro-enterprise from home requires minimal initial capital if planned wisely. Follow this beginner-friendly checklist to validate your idea, set up a working environment, and secure your first paying customers.",
+      readTime: "7 min read",
+      author: "Aatmanirbhar Nari Mentorship Team",
+      publishedDate: "August 2026",
+      isPublished: true,
+      sections: [
+        {
+          heading: "1. Define Your Core Skill & Signature Offering",
+          content: "Focus on what you do best—whether it's authentic North/South Indian cooking, custom blouse stitching, bridal mehendi, or handcrafted home decor. Keep your initial menu or service list small and high-quality."
+        },
+        {
+          heading: "2. Set Up a Clean, Dedicated Workspace",
+          content: "Separate your family space from your business area. For home kitchens, ensure pristine hygiene, separate storage for raw ingredients, and labeled containers. For tailoring, arrange proper lighting and ergonomic seating."
+        },
+        {
+          heading: "3. Test With Neighbors & Local Groups",
+          content: "Offer free samples or introductory discounts to 5-10 neighbors or friends. Ask for honest feedback on quality, pricing, and packaging before launching publicly."
+        },
+        {
+          heading: "4. Create Your Digital Business Card",
+          content: "Register on Aatmanirbhar Nari platform, list your working hours, and share your profile link across local WhatsApp community groups and word-of-mouth networks."
+        }
+      ],
+      keyTakeaways: [
+        "Start small with 2-3 signature products or services.",
+        "Gather customer feedback early before scaling.",
+        "Maintain strict quality and hygienic standards at home.",
+        "Leverage direct WhatsApp connections with local neighborhood buyers."
+      ]
+    },
+    {
+      title: "Pricing Basics: Profit Without Undercharging",
+      slug: "pricing-basics-profit-without-undercharging",
+      category: "Pricing & Finance",
+      description: "Learn how to calculate your true costs and set a fair, profitable price for your services.",
+      summary: "Many women entrepreneurs calculate prices based only on raw material cost, forgetting labor, electricity, packaging, and personal profit margins. Here is a simple math formula to price correctly.",
+      readTime: "5 min read",
+      author: "Financial Literacy Cell",
+      publishedDate: "August 2026",
+      isPublished: true,
+      sections: [
+        {
+          heading: "1. Calculate Direct Material Costs",
+          content: "Add up every item that goes into one unit (e.g., for a tiffin: rice, vegetables, spices, oil, gas, disposable containers)."
+        },
+        {
+          heading: "2. Factor in Your Personal Labor & Time",
+          content: "Your time is valuable! Assign a reasonable hourly rate for your work. If a blouse takes 3 hours to stitch, include labor cost for all 3 hours."
+        },
+        {
+          heading: "3. Include Overhead & Utilities",
+          content: "Add a small 10-15% buffer to cover electricity, fuel, equipment wear-and-tear, and water charges."
+        },
+        {
+          heading: "4. Add a Fair Profit Margin (20% - 30%)",
+          content: "Profit is what allows your business to grow and reinvest. Never sell at cost price just to match market competitors."
+        }
+      ],
+      keyTakeaways: [
+        "Formula: Total Cost = Raw Materials + Labor Time + Overheads + Profit Margin.",
+        "Never ignore your own labor time in price calculations.",
+        "Offer tiered packages (Basic, Standard, Premium) for different budgets.",
+        "Keep a physical notebook or digital expense log every week."
+      ]
+    },
+    {
+      title: "Digital Marketing via WhatsApp & Social Media",
+      slug: "digital-marketing-via-whatsapp-social-media",
+      category: "Marketing",
+      description: "Simple steps to promote your business in local WhatsApp and Facebook groups.",
+      summary: "You don't need expensive ads to grow your customer base. Highlighting real photos of your fresh food or finished garments in local WhatsApp groups drives high trust and rapid word-of-mouth orders.",
+      readTime: "8 min read",
+      author: "Digital Growth Coach",
+      publishedDate: "August 2026",
+      isPublished: true,
+      sections: [
+        {
+          heading: "1. Take Bright, Real Photos in Natural Light",
+          content: "Place your cooked dish or finished boutique dress near a window with clean background lighting. Avoid dark or blurred camera angles."
+        },
+        {
+          heading: "2. Craft Clear WhatsApp Broadcast Messages",
+          content: "Keep messages concise: Product Name, Price, Delivery Area, and a direct link to your Aatmanirbhar Nari profile for full details."
+        },
+        {
+          heading: "3. Request Customer Reviews & Photos",
+          content: "After delivering a meal or outfit, text your customer: 'Hope you enjoyed it! A quick review would mean the world to me.' Share positive feedback screenshots (with permission)."
+        },
+        {
+          heading: "4. Run Festival & Weekend Specials",
+          content: "Offer festive snack boxes during Diwali, festive saree stitching packages before weddings, or weekend tiffin combos."
+        }
+      ],
+      keyTakeaways: [
+        "Real photo uploads build 3x more trust than stock images.",
+        "Post consistently during peak decision hours (e.g., 10 AM for lunch tiffins).",
+        "Treat every customer with warm personal courtesy to ensure repeat orders."
+      ]
+    },
+    {
+      title: "Creating Your Brand Identity & Packaging",
+      slug: "creating-your-brand-identity-packaging",
+      category: "Branding",
+      description: "How to choose a memorable name, logo, and presentation for your products.",
+      summary: "Your brand is the promise you make to your customers. A memorable business name, clean packaging, and a custom thank-you note turn one-time buyers into lifelong advocates.",
+      readTime: "6 min read",
+      author: "Brand Strategy Desk",
+      publishedDate: "August 2026",
+      isPublished: true,
+      sections: [
+        {
+          heading: "1. Choosing a Memorable Business Name",
+          content: "Select a name that reflects warmth, trust, and your primary craft (e.g., 'Annapurna Home Kitchen', 'Sahana Tailoring Studio')."
+        },
+        {
+          heading: "2. Simple & Clean Packaging Solutions",
+          content: "Invest in eco-friendly paper bags, tamper-proof food containers, or branded stickers. Neat packaging reflects high professionalism."
+        },
+        {
+          heading: "3. Personal Touch: Handwritten Thank-You Notes",
+          content: "Adding a tiny note like 'Made with love for you!' inside the package creates an instant emotional bond."
+        }
+      ],
+      keyTakeaways: [
+        "Memorable names are simple and easy to pronounce.",
+        "Clean packaging protects products during transport and builds brand value.",
+        "Small personal touches cost almost nothing but create loyal customers."
+      ]
+    },
+    {
+      title: "Licensing & Legal Basics for Micro-Businesses",
+      slug: "licensing-legal-basics-for-micro-businesses",
+      category: "Legal Basics",
+      description: "A quick guide to local business registrations and food safety licenses (FSSAI).",
+      summary: "Understanding basic registrations like FSSAI (for food businesses) and Udyam Registration (for MSMEs) protects your business and unlocks government subsidies.",
+      readTime: "10 min read",
+      author: "Compliance & Advisory Team",
+      publishedDate: "August 2026",
+      isPublished: true,
+      sections: [
+        {
+          heading: "1. FSSAI Basic Registration for Home Caterers",
+          content: "If you prepare or sell home-cooked meals, applying for an FSSAI Basic Registration online costs under ₹100/year and gives customers complete peace of mind regarding food safety standards."
+        },
+        {
+          heading: "2. Free MSME Udyam Registration",
+          content: "Government of India offers free online Udyam registration for micro-enterprises using Aadhaar. It qualifies you for priority bank loans and micro-credit schemes."
+        },
+        {
+          heading: "3. Maintaining Simple Accounts",
+          content: "Maintain a daily ledger of Income and Expenses. Keep separate bank accounts for personal use and business transactions."
+        }
+      ],
+      keyTakeaways: [
+        "FSSAI Registration is simple and essential for food businesses.",
+        "Udyam Registration is free and opens access to government financial assistance.",
+        "Separating personal and business accounts prevents cash flow confusion."
+      ]
+    }
+  ];
+
+  for (const article of officialLearningResources) {
+    await prisma.learningContent.upsert({
+      where: { slug: article.slug },
+      update: {
+        title: article.title,
+        category: article.category,
+        description: article.description,
+        summary: article.summary,
+        readTime: article.readTime,
+        author: article.author,
+        publishedDate: article.publishedDate,
+        sections: article.sections,
+        keyTakeaways: article.keyTakeaways,
+        isPublished: true,
+      },
+      create: article,
+    });
+  }
+  console.log(`Seeded ${officialLearningResources.length} official learning resources.`);
 
   console.log('Idempotent seeding completed successfully!');
 }

@@ -899,3 +899,284 @@ export async function updateAdminReportStatus(id, status) {
   return data;
 }
 
+/**
+ * Fetch active categories (Public / Authenticated)
+ */
+export async function getCategories() {
+  const response = await fetch(`${API_BASE_URL}/categories`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to fetch categories.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data || [];
+}
+
+/**
+ * Fetch all categories including inactive (Admin only)
+ */
+export async function getAdminCategories() {
+  const response = await fetch(`${API_BASE_URL}/admin/categories`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to fetch admin categories.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data || [];
+}
+
+/**
+ * Create a new category (Admin only)
+ * @param {Object} categoryData - { name, slug, description, icon, isActive }
+ */
+export async function createAdminCategory(categoryData) {
+  const response = await fetch(`${API_BASE_URL}/admin/categories`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(categoryData),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to create category.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Update an existing category (Admin only)
+ * @param {number|string} id
+ * @param {Object} categoryData
+ */
+export async function updateAdminCategory(id, categoryData) {
+  const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(categoryData),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to update category.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Toggle category active status (Admin only)
+ * @param {number|string} id
+ * @param {boolean} isActive
+ */
+export async function toggleAdminCategoryStatus(id, isActive) {
+  const response = await fetch(`${API_BASE_URL}/admin/categories/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ isActive }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to toggle category status.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Delete or deactivate category (Admin only)
+ * @param {number|string} id
+ */
+export async function deleteAdminCategory(id) {
+  const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to delete category.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Fetch published learning resources (Public API)
+ * @param {Object} [params]
+ */
+export async function getLearningResources(params = {}) {
+  const queryParams = new URLSearchParams();
+  if (params.category && params.category !== 'All') queryParams.append('category', params.category);
+  if (params.search) queryParams.append('search', params.search);
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/learning${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to fetch learning resources.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Fetch single published learning resource by slug or ID (Public API)
+ * @param {number|string} slugOrId
+ */
+export async function getLearningResourceBySlug(slugOrId) {
+  const url = `${API_BASE_URL}/learning/${encodeURIComponent(slugOrId)}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Learning article not found.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Fetch all learning resources including drafts for Admin (Admin only)
+ */
+export async function getAdminLearningResources() {
+  const response = await fetch(`${API_BASE_URL}/admin/learning`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to fetch learning resources.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.data || [];
+}
+
+/**
+ * Create a new learning resource (Admin only)
+ * @param {Object} payload
+ */
+export async function createAdminLearningResource(payload) {
+  const response = await fetch(`${API_BASE_URL}/admin/learning`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to create learning resource.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Update a learning resource (Admin only)
+ * @param {number|string} id
+ * @param {Object} payload
+ */
+export async function updateAdminLearningResource(id, payload) {
+  const response = await fetch(`${API_BASE_URL}/admin/learning/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to update learning resource.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Toggle learning resource published status (Admin only)
+ * @param {number|string} id
+ * @param {boolean} isPublished
+ */
+export async function toggleAdminLearningResourceStatus(id, isPublished) {
+  const response = await fetch(`${API_BASE_URL}/admin/learning/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ isPublished }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to toggle publication status.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Delete learning resource (Admin only)
+ * @param {number|string} id
+ */
+export async function deleteAdminLearningResource(id) {
+  const response = await fetch(`${API_BASE_URL}/admin/learning/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to delete learning resource.');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+

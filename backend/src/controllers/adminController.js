@@ -2,34 +2,157 @@ const prisma = require('../config/db');
 
 const getAdminStats = async (req, res, next) => {
   try {
+    const now = new Date();
+    const currentYear = now.getUTCFullYear();
+    const currentMonth = now.getUTCMonth();
+
+    // Period bounds for current calendar month (UTC server time)
+    const monthStart = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0, 0));
+    const monthEnd = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0, 0));
+
+    const monthName = monthStart.toLocaleString('en-US', { month: 'long', timeZone: 'UTC' });
+    const periodLabel = `${monthName} ${currentYear}`;
+
+    // Parallel optimized queries
     const [
       totalUsers,
       totalCustomers,
-      totalEntrepreneurs,
+      registeredEntrepreneurs,
       totalAdmins,
       totalBusinesses,
+      activeListings,
       totalOrders,
       totalInquiries,
+      currentMonthInquiriesCount,
+      inquiriesByActiveBusiness,
+      monthlyActiveUsers,
+      entrepreneurs,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: 'CUSTOMER' } }),
       prisma.user.count({ where: { role: 'ENTREPRENEUR' } }),
       prisma.user.count({ where: { role: 'ADMIN' } }),
       prisma.business.count(),
+      prisma.business.count({ where: { verificationStatus: 'APPROVED' } }),
       prisma.order.count(),
       prisma.inquiry.count(),
+      prisma.inquiry.count({
+        where: {
+          createdAt: { gte: monthStart, lt: monthEnd },
+        },
+      }),
+      prisma.inquiry.groupBy({
+        by: ['businessId'],
+        where: {
+          createdAt: { gte: monthStart, lt: monthEnd },
+          business: { verificationStatus: 'APPROVED' },
+        },
+      }),
+      prisma.user.count({
+        where: {
+          role: { in: ['CUSTOMER', 'ENTREPRENEUR'] },
+          lastActiveAt: { gte: monthStart, lt: monthEnd },
+        },
+      }),
+      prisma.user.findMany({
+        where: { role: 'ENTREPRENEUR' },
+        select: {
+          id: true,
+          businesses: {
+            select: {
+              businessName: true,
+              category: true,
+              description: true,
+              ownerName: true,
+              location: true,
+              serviceArea: true,
+              pricingRange: true,
+              _count: {
+                select: {
+                  services: true,
+                  availability: true,
+                },
+              },
+            },
+          },
+        },
+      }),
     ]);
+
+    // KPI 3: Inquiry Rate calculation
+    const activeBusinessesWithInquiryCount = inquiriesByActiveBusiness.length;
+    const inquiryRatePercentage = activeListings > 0
+      ? Number(((activeBusinessesWithInquiryCount / activeListings) * 100).toFixed(1))
+      : 0;
+
+    // KPI 5: Profile Completion calculation
+    let totalCompletionSum = 0;
+    let completeProfilesCount = 0;
+    const totalProfilesEvaluated = entrepreneurs.length;
+
+    if (totalProfilesEvaluated > 0) {
+      for (const entrepreneur of entrepreneurs) {
+        const business = entrepreneur.businesses[0];
+        if (!business) {
+          continue;
+        }
+
+        let completedFields = 0;
+        if (business.businessName && business.businessName.trim() !== '') completedFields++;
+        if (business.category && business.category.trim() !== '') completedFields++;
+        if (business.description && business.description.trim() !== '') completedFields++;
+        if (business.ownerName && business.ownerName.trim() !== '') completedFields++;
+        if (business.location && business.location.trim() !== '') completedFields++;
+        if (business.serviceArea && business.serviceArea.trim() !== '') completedFields++;
+        if (business.pricingRange && business.pricingRange.trim() !== '') completedFields++;
+        if (business._count && business._count.services > 0) completedFields++;
+        if (business._count && business._count.availability > 0) completedFields++;
+
+        const completionPct = (completedFields / 9) * 100;
+        totalCompletionSum += completionPct;
+
+        if (completedFields === 9) {
+          completeProfilesCount++;
+        }
+      }
+    }
+
+    const averageProfileCompletion = totalProfilesEvaluated > 0
+      ? Number((totalCompletionSum / totalProfilesEvaluated).toFixed(1))
+      : 0;
 
     return res.status(200).json({
       success: true,
       data: {
+        // Preserved existing stats properties for backwards compatibility
         totalUsers,
         totalCustomers,
-        totalEntrepreneurs,
+        totalEntrepreneurs: registeredEntrepreneurs,
         totalAdmins,
         totalBusinesses,
         totalOrders,
         totalInquiries,
+
+        // Required 5 Platform KPIs
+        registeredEntrepreneurs,
+        activeListings,
+        inquiryRate: {
+          percentage: inquiryRatePercentage,
+          inquiries: currentMonthInquiriesCount,
+          activeBusinessesWithInquiry: activeBusinessesWithInquiryCount,
+          totalActiveBusinesses: activeListings,
+        },
+        monthlyActiveUsers,
+        profileCompletion: {
+          averagePercentage: averageProfileCompletion,
+          completeProfiles: completeProfilesCount,
+          totalProfiles: totalProfilesEvaluated,
+        },
+        period: {
+          start: monthStart.toISOString(),
+          end: monthEnd.toISOString(),
+          label: periodLabel,
+        },
       },
     });
   } catch (error) {

@@ -19,6 +19,13 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
+  Tag,
+  Plus,
+  Edit2,
+  Trash2,
+  ToggleLeft,
+  ToggleRight,
+  BookOpen,
 } from 'lucide-react';
 import {
   getAdminStats,
@@ -31,6 +38,16 @@ import {
   rejectBusinessVerification,
   getAdminReports,
   updateAdminReportStatus,
+  getAdminCategories,
+  createAdminCategory,
+  updateAdminCategory,
+  toggleAdminCategoryStatus,
+  deleteAdminCategory,
+  getAdminLearningResources,
+  createAdminLearningResource,
+  updateAdminLearningResource,
+  toggleAdminLearningResourceStatus,
+  deleteAdminLearningResource,
 } from '../../services/api';
 import { getCategoryGuidance } from '../../constants/verificationGuidance';
 import Button from '../../components/common/Button';
@@ -184,6 +201,36 @@ const renderVerificationStatusBadge = (status) => {
   }
 };
 
+// Render Status Badge for Reports
+const renderReportStatusBadge = (status) => {
+  switch (status) {
+    case 'OPEN':
+      return (
+        <span className="inline-flex items-center text-xs font-bold text-amber-300 bg-amber-950/80 border border-amber-500/40 px-2.5 py-0.5 rounded-full">
+          Open
+        </span>
+      );
+    case 'REVIEWED':
+      return (
+        <span className="inline-flex items-center text-xs font-bold text-sky-300 bg-sky-950/80 border border-sky-500/40 px-2.5 py-0.5 rounded-full">
+          Reviewed
+        </span>
+      );
+    case 'RESOLVED':
+      return (
+        <span className="inline-flex items-center text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
+          Resolved
+        </span>
+      );
+    default:
+      return (
+        <span className="inline-flex items-center text-xs font-bold text-stone-400 bg-stone-900/90 border border-stone-700/50 px-2.5 py-0.5 rounded-full">
+          {status}
+        </span>
+      );
+  }
+};
+
 const formatDate = (dateStr) => {
   if (!dateStr) return 'N/A';
   try {
@@ -251,6 +298,279 @@ const AdminDashboard = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [updatingReportId, setUpdatingReportId] = useState(null);
 
+  // Categories State
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categoriesError, setCategoriesError] = useState(null);
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryFormData, setCategoryFormData] = useState({
+    name: '',
+    slug: '',
+    description: '',
+    icon: 'Store',
+    isActive: true,
+  });
+  const [categorySubmitting, setCategorySubmitting] = useState(false);
+  const [categoryFormError, setCategoryFormError] = useState('');
+
+  const fetchCategories = useCallback(async () => {
+    setCategoriesLoading(true);
+    setCategoriesError(null);
+    try {
+      const data = await getAdminCategories();
+      setCategoriesList(data || []);
+    } catch (err) {
+      console.error('Error fetching admin categories:', err);
+      setCategoriesError(err.message || 'Failed to load categories.');
+    } finally {
+      setCategoriesLoading(false);
+    }
+  }, []);
+
+  const handleOpenCreateCategoryModal = () => {
+    setEditingCategory(null);
+    setCategoryFormData({
+      name: '',
+      slug: '',
+      description: '',
+      icon: 'Store',
+      isActive: true,
+    });
+    setCategoryFormError('');
+    setCategoryModalOpen(true);
+  };
+
+  const handleOpenEditCategoryModal = (cat) => {
+    setEditingCategory(cat);
+    setCategoryFormData({
+      name: cat.name,
+      slug: cat.slug,
+      description: cat.description || '',
+      icon: cat.icon || 'Store',
+      isActive: cat.isActive,
+    });
+    setCategoryFormError('');
+    setCategoryModalOpen(true);
+  };
+
+  const handleSaveCategory = async (e) => {
+    e.preventDefault();
+    setCategorySubmitting(true);
+    setCategoryFormError('');
+    setActionSuccess('');
+    setActionError('');
+    try {
+      if (editingCategory) {
+        await updateAdminCategory(editingCategory.id, categoryFormData);
+        setActionSuccess(`Category "${categoryFormData.name}" updated successfully.`);
+      } else {
+        await createAdminCategory(categoryFormData);
+        setActionSuccess(`Category "${categoryFormData.name}" created successfully.`);
+      }
+      setCategoryModalOpen(false);
+      fetchCategories();
+    } catch (err) {
+      setCategoryFormError(err.message || 'Failed to save category.');
+    } finally {
+      setCategorySubmitting(false);
+    }
+  };
+
+  const handleToggleCategoryStatus = async (cat) => {
+    setActionSuccess('');
+    setActionError('');
+    try {
+      await toggleAdminCategoryStatus(cat.id, !cat.isActive);
+      setActionSuccess(`Category "${cat.name}" status updated.`);
+      fetchCategories();
+    } catch (err) {
+      setActionError(err.message || 'Failed to update category status.');
+    }
+  };
+
+  const handleDeleteCategory = async (cat) => {
+    if (!window.confirm(`Are you sure you want to delete or deactivate category "${cat.name}"?`)) return;
+    setActionSuccess('');
+    setActionError('');
+    try {
+      const res = await deleteAdminCategory(cat.id);
+      setActionSuccess(res.message || `Category "${cat.name}" deleted.`);
+      fetchCategories();
+    } catch (err) {
+      setActionError(err.message || 'Failed to delete category.');
+    }
+  };
+
+  // Learning Resources State
+  const [learningList, setLearningList] = useState([]);
+  const [learningLoading, setLearningLoading] = useState(false);
+  const [learningError, setLearningError] = useState(null);
+  const [learningModalOpen, setLearningModalOpen] = useState(false);
+  const [editingLearning, setEditingLearning] = useState(null);
+  const [learningFormData, setLearningFormData] = useState({
+    title: '',
+    slug: '',
+    category: 'Business Basics',
+    description: '',
+    summary: '',
+    readTime: '5 min read',
+    author: 'Aatmanirbhar Nari Team',
+    isPublished: true,
+    keyTakeaways: [''],
+    sections: [{ heading: '', content: '' }],
+  });
+  const [learningSubmitting, setLearningSubmitting] = useState(false);
+  const [learningFormError, setLearningFormError] = useState('');
+
+  const fetchLearningList = useCallback(async () => {
+    setLearningLoading(true);
+    setLearningError(null);
+    try {
+      const data = await getAdminLearningResources();
+      setLearningList(data || []);
+    } catch (err) {
+      console.error('Error fetching admin learning resources:', err);
+      setLearningError(err.message || 'Failed to load learning resources.');
+    } finally {
+      setLearningLoading(false);
+    }
+  }, []);
+
+  const handleOpenCreateLearningModal = () => {
+    setEditingLearning(null);
+    setLearningFormData({
+      title: '',
+      slug: '',
+      category: 'Business Basics',
+      description: '',
+      summary: '',
+      readTime: '5 min read',
+      author: 'Aatmanirbhar Nari Team',
+      isPublished: true,
+      keyTakeaways: [''],
+      sections: [{ heading: '', content: '' }],
+    });
+    setLearningFormError('');
+    setLearningModalOpen(true);
+  };
+
+  const handleOpenEditLearningModal = (article) => {
+    setEditingLearning(article);
+    setLearningFormData({
+      title: article.title || '',
+      slug: article.slug || '',
+      category: article.category || 'Business Basics',
+      description: article.description || '',
+      summary: article.summary || '',
+      readTime: article.readTime || '5 min read',
+      author: article.author || 'Aatmanirbhar Nari Team',
+      isPublished: article.isPublished ?? true,
+      keyTakeaways: Array.isArray(article.keyTakeaways) && article.keyTakeaways.length > 0 ? article.keyTakeaways : [''],
+      sections: Array.isArray(article.sections) && article.sections.length > 0 ? article.sections : [{ heading: '', content: '' }],
+    });
+    setLearningFormError('');
+    setLearningModalOpen(true);
+  };
+
+  const handleSaveLearning = async (e) => {
+    e.preventDefault();
+    setLearningSubmitting(true);
+    setLearningFormError('');
+    setActionSuccess('');
+    setActionError('');
+    try {
+      const payload = {
+        ...learningFormData,
+        keyTakeaways: learningFormData.keyTakeaways.filter((k) => k.trim() !== ''),
+        sections: learningFormData.sections.filter((s) => s.heading.trim() !== '' || s.content.trim() !== ''),
+      };
+
+      if (editingLearning) {
+        await updateAdminLearningResource(editingLearning.id, payload);
+        setActionSuccess(`Learning article "${learningFormData.title}" updated successfully.`);
+      } else {
+        await createAdminLearningResource(payload);
+        setActionSuccess(`Learning article "${learningFormData.title}" created successfully.`);
+      }
+      setLearningModalOpen(false);
+      fetchLearningList();
+    } catch (err) {
+      setLearningFormError(err.message || 'Failed to save learning article.');
+    } finally {
+      setLearningSubmitting(false);
+    }
+  };
+
+  const handleToggleLearningStatus = async (article) => {
+    setActionSuccess('');
+    setActionError('');
+    try {
+      await toggleAdminLearningResourceStatus(article.id, !article.isPublished);
+      setActionSuccess(`Article "${article.title}" published status updated.`);
+      fetchLearningList();
+    } catch (err) {
+      setActionError(err.message || 'Failed to update article status.');
+    }
+  };
+
+  const handleDeleteLearning = async (article) => {
+    if (!window.confirm(`Are you sure you want to delete learning article "${article.title}"?`)) return;
+    setActionSuccess('');
+    setActionError('');
+    try {
+      const res = await deleteAdminLearningResource(article.id);
+      setActionSuccess(res.message || `Article "${article.title}" deleted.`);
+      fetchLearningList();
+    } catch (err) {
+      setActionError(err.message || 'Failed to delete learning article.');
+    }
+  };
+
+  const handleAddKeyTakeaway = () => {
+    setLearningFormData((prev) => ({
+      ...prev,
+      keyTakeaways: [...prev.keyTakeaways, ''],
+    }));
+  };
+
+  const handleRemoveKeyTakeaway = (index) => {
+    setLearningFormData((prev) => ({
+      ...prev,
+      keyTakeaways: prev.keyTakeaways.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleKeyTakeawayChange = (index, value) => {
+    setLearningFormData((prev) => {
+      const updated = [...prev.keyTakeaways];
+      updated[index] = value;
+      return { ...prev, keyTakeaways: updated };
+    });
+  };
+
+  const handleAddSection = () => {
+    setLearningFormData((prev) => ({
+      ...prev,
+      sections: [...prev.sections, { heading: '', content: '' }],
+    }));
+  };
+
+  const handleRemoveSection = (index) => {
+    setLearningFormData((prev) => ({
+      ...prev,
+      sections: prev.sections.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSectionChange = (index, field, value) => {
+    setLearningFormData((prev) => {
+      const updated = [...prev.sections];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, sections: updated };
+    });
+  };
+
   const fetchReports = useCallback(async (statusFilter) => {
     setReportsLoading(true);
     setReportsError(null);
@@ -271,7 +591,7 @@ const AdminDashboard = () => {
     setActionSuccess('');
     try {
       const res = await updateAdminReportStatus(reportId, newStatus);
-      showSuccessNotice(res.message || 'Report status updated successfully.');
+      setActionSuccess(res.message || 'Report status updated successfully.');
       setReports((prev) =>
         prev.map((r) => (r.id === reportId ? { ...r, status: newStatus } : r))
       );
@@ -279,7 +599,7 @@ const AdminDashboard = () => {
         setSelectedReport((prev) => (prev ? { ...prev, status: newStatus } : null));
       }
     } catch (err) {
-      showErrorNotice(err.message || 'Failed to update report status.');
+      setActionError(err.message || 'Failed to update report status.');
     } finally {
       setUpdatingReportId(null);
     }
@@ -455,11 +775,25 @@ const AdminDashboard = () => {
     }
   }, [activeTab, reportStatusFilter, fetchReports]);
 
+  useEffect(() => {
+    if (activeTab === 'categories') {
+      fetchCategories();
+    }
+  }, [activeTab, fetchCategories]);
+
+  useEffect(() => {
+    if (activeTab === 'learning') {
+      fetchLearningList();
+    }
+  }, [activeTab, fetchLearningList]);
+
   // Escape key handler for open modals
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        if (selectedOrder) setSelectedOrder(null);
+        if (categoryModalOpen) setCategoryModalOpen(false);
+        else if (learningModalOpen) setLearningModalOpen(false);
+        else if (selectedOrder) setSelectedOrder(null);
         else if (selectedInquiry) setSelectedInquiry(null);
         else if (selectedVerification) setSelectedVerification(null);
         else if (selectedReport) setSelectedReport(null);
@@ -467,12 +801,14 @@ const AdminDashboard = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedOrder, selectedInquiry, selectedVerification, selectedReport]);
+  }, [categoryModalOpen, learningModalOpen, selectedOrder, selectedInquiry, selectedVerification, selectedReport]);
 
   // Refresh current view
   const handleRefreshCurrent = () => {
     fetchStats();
     fetchVerifications(verificationStatusFilter);
+    if (activeTab === 'categories') fetchCategories();
+    if (activeTab === 'learning') fetchLearningList();
     if (activeTab === 'users') fetchUsers(userRoleFilter);
     if (activeTab === 'businesses') fetchBusinesses();
     if (activeTab === 'orders') fetchOrders(orderStatusFilter);
@@ -642,110 +978,242 @@ const AdminDashboard = () => {
             <AlertTriangle className="w-4 h-4 mr-2 text-amber-400" />
             Reports
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('categories')}
+            aria-current={activeTab === 'categories' ? 'page' : undefined}
+            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors cursor-pointer ${
+              activeTab === 'categories'
+                ? 'bg-brand-surface text-brand-primary border-t-2 border-x border-b-0 border-brand-primary shadow-xs'
+                : 'text-brand-text hover:text-brand-primary hover:bg-brand-surface/50'
+            }`}
+          >
+            <Tag className="w-4 h-4 mr-2 text-brand-primary" />
+            Categories
+            {categoriesList.length > 0 && (
+              <span className="ml-2 bg-brand-primary/10 text-brand-primary text-xs px-2 py-0.5 rounded-full font-bold">
+                {categoriesList.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('learning')}
+            aria-current={activeTab === 'learning' ? 'page' : undefined}
+            className={`px-4 py-2.5 rounded-t-lg text-sm font-semibold flex items-center whitespace-nowrap transition-colors cursor-pointer ${
+              activeTab === 'learning'
+                ? 'bg-brand-surface text-brand-primary border-t-2 border-x border-b-0 border-brand-primary shadow-xs'
+                : 'text-brand-text hover:text-brand-primary hover:bg-brand-surface/50'
+            }`}
+          >
+            <BookOpen className="w-4 h-4 mr-2 text-brand-primary" />
+            Learning Content
+            {learningList.length > 0 && (
+              <span className="ml-2 bg-brand-primary/10 text-brand-primary text-xs px-2 py-0.5 rounded-full font-bold">
+                {learningList.length}
+              </span>
+            )}
+          </button>
         </nav>
 
-        {/* SECTION A: OVERVIEW */}
+        {/* SECTION A: OVERVIEW & KPIs */}
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-bold text-brand-secondary flex items-center">
-              <Layers className="w-5 h-5 mr-2 text-brand-primary" />
-              Platform Overview Statistics
-            </h2>
+          <div className="space-y-8">
+            {/* Platform Key Performance Indicators (KPIs) */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h2 className="text-lg font-extrabold text-brand-secondary flex items-center">
+                    <Layers className="w-5 h-5 mr-2 text-brand-primary" />
+                    Platform Key Performance Indicators (KPIs)
+                  </h2>
+                  <p className="text-xs text-brand-muted mt-0.5">
+                    Real-time production metric calculations derived directly from database records
+                  </p>
+                </div>
+                {stats?.period?.label && (
+                  <span className="inline-flex items-center text-xs font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 px-3 py-1 rounded-full w-fit">
+                    Active Period: {stats.period.label}
+                  </span>
+                )}
+              </div>
 
-            {statsLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-brand-surface border border-brand-border rounded-xl p-5 animate-pulse h-28"></div>
-                ))}
-              </div>
-            ) : statsError ? (
-              <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center space-x-3">
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                <p className="text-sm font-medium">{statsError}</p>
-                <Button variant="outline" size="sm" onClick={fetchStats} className="ml-auto text-xs">
-                  Retry
-                </Button>
-              </div>
-            ) : (
+              {statsLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="bg-brand-surface border border-brand-border rounded-xl p-5 animate-pulse h-36"></div>
+                  ))}
+                </div>
+              ) : statsError ? (
+                <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center space-x-3">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <p className="text-sm font-medium">{statsError}</p>
+                  <Button variant="outline" size="sm" onClick={fetchStats} className="ml-auto text-xs">
+                    Retry
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {/* KPI 1: Registered Entrepreneurs */}
+                  <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex flex-col justify-between hover:border-brand-primary/30 transition-all">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-brand-muted uppercase tracking-wider">KPI 1 • Registered Entrepreneurs</p>
+                        <h3 className="text-3xl font-extrabold text-brand-secondary mt-1">
+                          {stats?.registeredEntrepreneurs ?? stats?.totalEntrepreneurs ?? 0}
+                        </h3>
+                      </div>
+                      <div className="p-3 bg-purple-50 text-purple-600 rounded-xl border border-purple-100">
+                        <Briefcase className="w-6 h-6" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-brand-muted mt-3 pt-3 border-t border-brand-border/60">
+                      Active registered entrepreneur accounts (excluding customer & admin accounts)
+                    </p>
+                  </div>
+
+                  {/* KPI 2: Active Listings */}
+                  <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex flex-col justify-between hover:border-brand-primary/30 transition-all">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-brand-muted uppercase tracking-wider">KPI 2 • Active Listings</p>
+                        <h3 className="text-3xl font-extrabold text-brand-secondary mt-1">
+                          {stats?.activeListings ?? 0}
+                        </h3>
+                      </div>
+                      <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
+                        <CheckCircle className="w-6 h-6" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-brand-muted mt-3 pt-3 border-t border-brand-border/60">
+                      Approved & publicly visible business listings under platform verification rules
+                    </p>
+                  </div>
+
+                  {/* KPI 3: Inquiry Rate */}
+                  <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex flex-col justify-between hover:border-brand-primary/30 transition-all">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-brand-muted uppercase tracking-wider">KPI 3 • Inquiry Rate</p>
+                        <h3 className="text-3xl font-extrabold text-brand-secondary mt-1">
+                          {stats?.inquiryRate?.percentage ?? 0}%
+                        </h3>
+                      </div>
+                      <div className="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
+                        <MessageSquare className="w-6 h-6" />
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-brand-border/60">
+                      <p className="text-xs font-semibold text-brand-secondary">
+                        {stats?.inquiryRate?.activeBusinessesWithInquiry ?? 0} of {stats?.inquiryRate?.totalActiveBusinesses ?? 0} active businesses received inquiries
+                      </p>
+                      <p className="text-xs text-brand-muted mt-0.5">
+                        {stats?.inquiryRate?.inquiries ?? 0} total inquiries in {stats?.period?.label ?? 'current month'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* KPI 4: Monthly Active Users (MAU) */}
+                  <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex flex-col justify-between hover:border-brand-primary/30 transition-all">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-brand-muted uppercase tracking-wider">KPI 4 • Monthly Active Users (MAU)</p>
+                        <h3 className="text-3xl font-extrabold text-brand-secondary mt-1">
+                          {stats?.monthlyActiveUsers ?? 0}
+                        </h3>
+                      </div>
+                      <div className="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
+                        <UserCheck className="w-6 h-6" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-brand-muted mt-3 pt-3 border-t border-brand-border/60">
+                      Distinct authenticated customers & entrepreneurs active in {stats?.period?.label ?? 'current month'}
+                    </p>
+                  </div>
+
+                  {/* KPI 5: Profile Completion */}
+                  <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex flex-col justify-between hover:border-brand-primary/30 transition-all sm:col-span-2 lg:col-span-2">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-brand-muted uppercase tracking-wider">KPI 5 • Profile Completion</p>
+                        <div className="flex items-baseline space-x-3 mt-1">
+                          <h3 className="text-3xl font-extrabold text-brand-secondary">
+                            {stats?.profileCompletion?.averagePercentage ?? 0}%
+                          </h3>
+                          <span className="text-xs font-semibold text-brand-muted">Average score</span>
+                        </div>
+                      </div>
+                      <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100">
+                        <FileText className="w-6 h-6" />
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-brand-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <p className="text-xs font-semibold text-brand-secondary">
+                        {stats?.profileCompletion?.completeProfiles ?? 0} of {stats?.profileCompletion?.totalProfiles ?? 0} entrepreneurs have 100% complete business profiles
+                      </p>
+                      <p className="text-xs text-brand-muted">
+                        Evaluated across 9 required business profile fields
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* General Platform Counts */}
+            <div className="space-y-4 pt-4 border-t border-brand-border">
+              <h2 className="text-md font-bold text-brand-secondary">
+                Additional Platform Statistics
+              </h2>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Total Users */}
-                <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex items-center space-x-4">
-                  <div className="p-3.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
-                    <Users className="w-6 h-6" />
+                <div className="bg-brand-surface border border-brand-border rounded-xl p-4 shadow-xs flex items-center space-x-3">
+                  <div className="p-3 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
+                    <Users className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Total Users</p>
-                    <p className="text-2xl font-extrabold text-brand-secondary">{stats?.totalUsers || 0}</p>
+                    <p className="text-xl font-extrabold text-brand-secondary">{stats?.totalUsers || 0}</p>
                   </div>
                 </div>
 
                 {/* Customers */}
-                <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex items-center space-x-4">
-                  <div className="p-3.5 bg-teal-50 text-teal-600 rounded-xl border border-teal-100">
-                    <UserCheck className="w-6 h-6" />
+                <div className="bg-brand-surface border border-brand-border rounded-xl p-4 shadow-xs flex items-center space-x-3">
+                  <div className="p-3 bg-teal-50 text-teal-600 rounded-lg border border-teal-100">
+                    <UserCheck className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Customers</p>
-                    <p className="text-2xl font-extrabold text-brand-secondary">{stats?.totalCustomers || 0}</p>
-                  </div>
-                </div>
-
-                {/* Entrepreneurs */}
-                <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex items-center space-x-4">
-                  <div className="p-3.5 bg-purple-50 text-purple-600 rounded-xl border border-purple-100">
-                    <Briefcase className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Entrepreneurs</p>
-                    <p className="text-2xl font-extrabold text-brand-secondary">{stats?.totalEntrepreneurs || 0}</p>
+                    <p className="text-xl font-extrabold text-brand-secondary">{stats?.totalCustomers || 0}</p>
                   </div>
                 </div>
 
                 {/* Admins */}
-                <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex items-center space-x-4">
-                  <div className="p-3.5 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100">
-                    <Shield className="w-6 h-6" />
+                <div className="bg-brand-surface border border-brand-border rounded-xl p-4 shadow-xs flex items-center space-x-3">
+                  <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg border border-indigo-100">
+                    <Shield className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Admins</p>
-                    <p className="text-2xl font-extrabold text-brand-secondary">{stats?.totalAdmins || 0}</p>
-                  </div>
-                </div>
-
-                {/* Businesses */}
-                <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex items-center space-x-4">
-                  <div className="p-3.5 bg-brand-primary/10 text-brand-primary rounded-xl border border-brand-primary/20">
-                    <Building2 className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Businesses</p>
-                    <p className="text-2xl font-extrabold text-brand-secondary">{stats?.totalBusinesses || 0}</p>
+                    <p className="text-xl font-extrabold text-brand-secondary">{stats?.totalAdmins || 0}</p>
                   </div>
                 </div>
 
                 {/* Orders */}
-                <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex items-center space-x-4">
-                  <div className="p-3.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
-                    <Package className="w-6 h-6" />
+                <div className="bg-brand-surface border border-brand-border rounded-xl p-4 shadow-xs flex items-center space-x-3">
+                  <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100">
+                    <Package className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Orders</p>
-                    <p className="text-2xl font-extrabold text-brand-secondary">{stats?.totalOrders || 0}</p>
-                  </div>
-                </div>
-
-                {/* Inquiries */}
-                <div className="bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex items-center space-x-4 sm:col-span-2 lg:col-span-2">
-                  <div className="p-3.5 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
-                    <MessageSquare className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Customer Inquiries</p>
-                    <p className="text-2xl font-extrabold text-brand-secondary">{stats?.totalInquiries || 0}</p>
+                    <p className="text-xl font-extrabold text-brand-secondary">{stats?.totalOrders || 0}</p>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         )}
 
@@ -1329,8 +1797,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-      </div>
-
       {/* READ-ONLY ORDER DETAIL MODAL */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
@@ -1699,6 +2165,639 @@ const AdminDashboard = () => {
         </div>
       )}
 
+      {/* SECTION F: CATEGORY MANAGEMENT */}
+        {activeTab === 'categories' && (
+          <div className="space-y-6">
+            {actionSuccess && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl flex items-center justify-between shadow-xs">
+                <span className="text-xs font-semibold">{actionSuccess}</span>
+                <button onClick={() => setActionSuccess('')} className="text-emerald-600 hover:text-emerald-900 text-xs font-bold">Dismiss</button>
+              </div>
+            )}
+
+            {actionError && (
+              <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl flex items-center justify-between shadow-xs">
+                <span className="text-xs font-semibold">{actionError}</span>
+                <button onClick={() => setActionError('')} className="text-red-600 hover:text-red-900 text-xs font-bold">Dismiss</button>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-brand-secondary flex items-center">
+                  <Tag className="w-5 h-5 mr-2 text-brand-primary" />
+                  Platform Category Management
+                </h2>
+                <p className="text-xs text-brand-muted mt-1">
+                  Manage official marketplace categories, active status toggles, and business counts.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleOpenCreateCategoryModal}
+                className="text-xs flex items-center shadow-md font-bold self-start sm:self-auto"
+              >
+                <Plus className="w-4 h-4 mr-1.5" />
+                Add New Category
+              </Button>
+            </div>
+
+            {categoriesLoading ? (
+              <div className="bg-brand-surface border border-brand-border rounded-xl p-8 text-center animate-pulse text-brand-muted text-sm">
+                Loading categories...
+              </div>
+            ) : categoriesError ? (
+              <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center space-x-3">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p className="text-sm font-medium">{categoriesError}</p>
+                <Button variant="outline" size="sm" onClick={fetchCategories} className="ml-auto text-xs">
+                  Retry
+                </Button>
+              </div>
+            ) : categoriesList.length === 0 ? (
+              <div className="bg-brand-surface border border-brand-border rounded-xl p-12 text-center text-brand-muted text-sm">
+                No categories found in system. Click "Add New Category" to create one.
+              </div>
+            ) : (
+              <div className="bg-brand-surface border border-brand-border rounded-xl overflow-hidden shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-brand-text">
+                    <thead className="bg-brand-background text-brand-secondary font-bold text-xs uppercase tracking-wider border-b border-brand-border">
+                      <tr>
+                        <th className="py-3 px-4">#</th>
+                        <th className="py-3 px-4">Category Name & Slug</th>
+                        <th className="py-3 px-4">Description</th>
+                        <th className="py-3 px-4 text-center">Status</th>
+                        <th className="py-3 px-4 text-center">Assigned Businesses</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-border/60 font-medium">
+                      {categoriesList.map((cat, index) => (
+                        <tr key={cat.id} className="hover:bg-brand-background/50 transition-colors">
+                          <td className="py-3.5 px-4 text-xs font-mono text-brand-muted">{index + 1}</td>
+                          <td className="py-3.5 px-4">
+                            <div className="font-bold text-brand-secondary text-sm">{cat.name}</div>
+                            <div className="text-[11px] font-mono text-brand-muted">{cat.slug}</div>
+                          </td>
+                          <td className="py-3.5 px-4 text-xs text-brand-muted max-w-xs truncate">
+                            {cat.description || 'No description provided.'}
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            {cat.isActive ? (
+                              <span className="inline-flex items-center text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
+                                Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center text-xs font-bold text-stone-400 bg-stone-900/90 border border-stone-700/50 px-2.5 py-0.5 rounded-full">
+                                Inactive
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            <span className="inline-flex items-center text-xs font-bold text-brand-primary bg-brand-background border border-brand-border px-2.5 py-1 rounded-md">
+                              {cat.businessCount || 0} business(es)
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleCategoryStatus(cat)}
+                                title={cat.isActive ? 'Deactivate Category' : 'Activate Category'}
+                                className={`p-1.5 rounded-lg border text-xs font-semibold transition-colors ${
+                                  cat.isActive
+                                    ? 'border-amber-500/30 text-amber-300 hover:bg-amber-950/50'
+                                    : 'border-emerald-500/30 text-emerald-300 hover:bg-emerald-950/50'
+                                }`}
+                              >
+                                {cat.isActive ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditCategoryModal(cat)}
+                                title="Edit Category"
+                                className="p-1.5 rounded-lg border border-brand-border text-brand-text hover:text-brand-primary hover:bg-brand-background transition-colors"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCategory(cat)}
+                                title="Delete Category"
+                                className="p-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-950/50 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Category Create / Edit Modal */}
+        {categoryModalOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="category-modal-title"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+          >
+            <div className="bg-brand-surface border border-brand-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+              <div className="flex items-center justify-between border-b border-brand-border/60 pb-3">
+                <h3 id="category-modal-title" className="text-lg font-extrabold text-brand-secondary flex items-center">
+                  <Tag className="w-5 h-5 mr-2 text-brand-primary" />
+                  {editingCategory ? 'Edit Category' : 'Create New Category'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setCategoryModalOpen(false)}
+                  className="p-1 text-brand-muted hover:text-brand-secondary rounded-lg hover:bg-brand-background"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {categoryFormError && (
+                <div role="alert" className="p-3 bg-red-950/80 border border-red-500/40 rounded-xl text-red-300 text-xs flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{categoryFormError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveCategory} className="space-y-4 text-sm">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                    Category Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={categoryFormData.name}
+                    onChange={(e) => setCategoryFormData((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="e.g. Handmade Pottery"
+                    className="w-full bg-brand-background border border-brand-border rounded-lg px-3.5 py-2 text-sm text-brand-secondary focus:border-brand-primary focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                    URL Slug (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={categoryFormData.slug}
+                    onChange={(e) => setCategoryFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                    placeholder="e.g. handmade-pottery (auto-generated if empty)"
+                    className="w-full bg-brand-background border border-brand-border rounded-lg px-3.5 py-2 text-sm text-brand-secondary focus:border-brand-primary focus:outline-none font-mono text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={categoryFormData.description}
+                    onChange={(e) => setCategoryFormData((prev) => ({ ...prev, description: e.target.value }))}
+                    placeholder="Brief summary of services offered under this category..."
+                    className="w-full bg-brand-background border border-brand-border rounded-lg px-3.5 py-2 text-sm text-brand-secondary focus:border-brand-primary focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center space-x-3 pt-2">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={categoryFormData.isActive}
+                      onChange={(e) => setCategoryFormData((prev) => ({ ...prev, isActive: e.target.checked }))}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-stone-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span className="ml-3 text-xs font-bold text-brand-secondary">Active & Visible in Marketplace</span>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-brand-border/60">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCategoryModalOpen(false)}
+                    className="text-xs"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={categorySubmitting}
+                    className="text-xs font-bold shadow-md"
+                  >
+                    {categorySubmitting ? 'Saving...' : editingCategory ? 'Update Category' : 'Create Category'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* SECTION G: LEARNING CONTENT MANAGEMENT */}
+        {activeTab === 'learning' && (
+          <div className="space-y-6">
+            {actionSuccess && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl flex items-center justify-between shadow-xs">
+                <span className="text-xs font-semibold">{actionSuccess}</span>
+                <button onClick={() => setActionSuccess('')} className="text-emerald-600 hover:text-emerald-900 text-xs font-bold">Dismiss</button>
+              </div>
+            )}
+
+            {actionError && (
+              <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl flex items-center justify-between shadow-xs">
+                <span className="text-xs font-semibold">{actionError}</span>
+                <button onClick={() => setActionError('')} className="text-red-600 hover:text-red-900 text-xs font-bold">Dismiss</button>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-brand-secondary flex items-center">
+                  <BookOpen className="w-5 h-5 mr-2 text-brand-primary" />
+                  Learning Content Management
+                </h2>
+                <p className="text-xs text-brand-muted mt-1">
+                  Manage educational guides, articles, draft statuses, and resources for entrepreneurs and customers.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleOpenCreateLearningModal}
+                className="text-xs flex items-center shadow-md font-bold self-start sm:self-auto"
+              >
+                <Plus className="w-4 h-4 mr-1.5" />
+                Add Learning Article
+              </Button>
+            </div>
+
+            {learningLoading ? (
+              <div className="bg-brand-surface border border-brand-border rounded-xl p-8 text-center animate-pulse text-brand-muted text-sm">
+                Loading learning resources...
+              </div>
+            ) : learningError ? (
+              <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center space-x-3">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p className="text-sm font-medium">{learningError}</p>
+                <Button variant="outline" size="sm" onClick={fetchLearningList} className="ml-auto text-xs">
+                  Retry
+                </Button>
+              </div>
+            ) : learningList.length === 0 ? (
+              <div className="bg-brand-surface border border-brand-border rounded-xl p-12 text-center text-brand-muted text-sm">
+                No learning articles found in database. Click "Add Learning Article" to create one.
+              </div>
+            ) : (
+              <div className="bg-brand-surface border border-brand-border rounded-xl overflow-hidden shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-brand-text">
+                    <thead className="bg-brand-background text-brand-secondary font-bold text-xs uppercase tracking-wider border-b border-brand-border">
+                      <tr>
+                        <th className="py-3 px-4">#</th>
+                        <th className="py-3 px-4">Article Title & Slug</th>
+                        <th className="py-3 px-4">Category</th>
+                        <th className="py-3 px-4">Read Time & Author</th>
+                        <th className="py-3 px-4 text-center">Status</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-border/60 font-medium">
+                      {learningList.map((item, index) => (
+                        <tr key={item.id} className="hover:bg-brand-background/50 transition-colors">
+                          <td className="py-3.5 px-4 text-xs font-mono text-brand-muted">{index + 1}</td>
+                          <td className="py-3.5 px-4">
+                            <div className="font-bold text-brand-secondary text-sm">{item.title}</div>
+                            <div className="text-[11px] font-mono text-brand-muted">{item.slug}</div>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className="inline-flex items-center text-xs font-semibold text-brand-primary bg-brand-primary/10 px-2.5 py-0.5 rounded-md">
+                              {item.category}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-xs text-brand-muted">
+                            <div>{item.readTime || '5 min read'}</div>
+                            <div className="text-[11px] font-medium text-brand-secondary">{item.author || 'Aatmanirbhar Nari Team'}</div>
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            {item.isPublished ? (
+                              <span className="inline-flex items-center text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
+                                Published
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center text-xs font-bold text-stone-400 bg-stone-900/90 border border-stone-700/50 px-2.5 py-0.5 rounded-full">
+                                Draft
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleLearningStatus(item)}
+                                title={item.isPublished ? 'Unpublish Article' : 'Publish Article'}
+                                className={`p-1.5 rounded-lg border text-xs font-semibold transition-colors ${
+                                  item.isPublished
+                                    ? 'border-amber-500/30 text-amber-300 hover:bg-amber-950/50'
+                                    : 'border-emerald-500/30 text-emerald-300 hover:bg-emerald-950/50'
+                                }`}
+                              >
+                                {item.isPublished ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditLearningModal(item)}
+                                title="Edit Article"
+                                className="p-1.5 rounded-lg border border-brand-border text-brand-text hover:text-brand-primary hover:bg-brand-background transition-colors"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteLearning(item)}
+                                title="Delete Article"
+                                className="p-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-950/50 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Learning Article Create / Edit Modal */}
+        {learningModalOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="learning-modal-title"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+          >
+            <div className="bg-brand-surface border border-brand-border rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-brand-border/60 pb-3">
+                <h3 id="learning-modal-title" className="text-lg font-extrabold text-brand-secondary flex items-center">
+                  <BookOpen className="w-5 h-5 mr-2 text-brand-primary" />
+                  {editingLearning ? 'Edit Learning Article' : 'Create New Learning Article'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setLearningModalOpen(false)}
+                  className="p-1 text-brand-muted hover:text-brand-secondary rounded-lg hover:bg-brand-background"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {learningFormError && (
+                <div role="alert" className="p-3 bg-red-950/80 border border-red-500/40 rounded-xl text-red-300 text-xs flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{learningFormError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveLearning} className="space-y-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                      Article Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={learningFormData.title}
+                      onChange={(e) => setLearningFormData((prev) => ({ ...prev, title: e.target.value }))}
+                      placeholder="e.g. Starting Your Home Business"
+                      className="w-full bg-brand-background border border-brand-border rounded-lg px-3.5 py-2 text-sm text-brand-secondary focus:border-brand-primary focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                      URL Slug (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={learningFormData.slug}
+                      onChange={(e) => setLearningFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                      placeholder="e.g. starting-your-home-business"
+                      className="w-full bg-brand-background border border-brand-border rounded-lg px-3.5 py-2 text-sm text-brand-secondary focus:border-brand-primary focus:outline-none font-mono text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                      Category
+                    </label>
+                    <input
+                      type="text"
+                      value={learningFormData.category}
+                      onChange={(e) => setLearningFormData((prev) => ({ ...prev, category: e.target.value }))}
+                      placeholder="e.g. Business Basics"
+                      className="w-full bg-brand-background border border-brand-border rounded-lg px-3.5 py-2 text-sm text-brand-secondary focus:border-brand-primary focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                      Read Time
+                    </label>
+                    <input
+                      type="text"
+                      value={learningFormData.readTime}
+                      onChange={(e) => setLearningFormData((prev) => ({ ...prev, readTime: e.target.value }))}
+                      placeholder="e.g. 5 min read"
+                      className="w-full bg-brand-background border border-brand-border rounded-lg px-3.5 py-2 text-sm text-brand-secondary focus:border-brand-primary focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                      Author
+                    </label>
+                    <input
+                      type="text"
+                      value={learningFormData.author}
+                      onChange={(e) => setLearningFormData((prev) => ({ ...prev, author: e.target.value }))}
+                      placeholder="e.g. Aatmanirbhar Nari Team"
+                      className="w-full bg-brand-background border border-brand-border rounded-lg px-3.5 py-2 text-sm text-brand-secondary focus:border-brand-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                    Summary / Excerpt
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={learningFormData.summary}
+                    onChange={(e) => setLearningFormData((prev) => ({ ...prev, summary: e.target.value }))}
+                    placeholder="Short overview card summary for Learning Hub preview..."
+                    className="w-full bg-brand-background border border-brand-border rounded-lg px-3.5 py-2 text-sm text-brand-secondary focus:border-brand-primary focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary mb-1">
+                    Full Description / Intro
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={learningFormData.description}
+                    onChange={(e) => setLearningFormData((prev) => ({ ...prev, description: e.target.value }))}
+                    placeholder="Detailed introduction text for full article view..."
+                    className="w-full bg-brand-background border border-brand-border rounded-lg px-3.5 py-2 text-sm text-brand-secondary focus:border-brand-primary focus:outline-none"
+                  />
+                </div>
+
+                {/* Key Takeaways */}
+                <div className="space-y-2 pt-2 border-t border-brand-border/60">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary">
+                      Key Takeaways
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleAddKeyTakeaway}
+                      className="text-xs text-brand-primary font-bold hover:underline flex items-center"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" /> Add Takeaway
+                    </button>
+                  </div>
+                  {learningFormData.keyTakeaways.map((takeaway, idx) => (
+                    <div key={idx} className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={takeaway}
+                        onChange={(e) => handleKeyTakeawayChange(idx, e.target.value)}
+                        placeholder={`Takeaway #${idx + 1}`}
+                        className="flex-1 bg-brand-background border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-secondary focus:border-brand-primary focus:outline-none"
+                      />
+                      {learningFormData.keyTakeaways.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveKeyTakeaway(idx)}
+                          className="p-1.5 text-red-400 hover:text-red-300"
+                          title="Remove takeaway"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Content Sections */}
+                <div className="space-y-3 pt-2 border-t border-brand-border/60">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brand-secondary">
+                      Content Sections
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleAddSection}
+                      className="text-xs text-brand-primary font-bold hover:underline flex items-center"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" /> Add Section
+                    </button>
+                  </div>
+                  {learningFormData.sections.map((sec, idx) => (
+                    <div key={idx} className="bg-brand-background p-3 rounded-xl border border-brand-border space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-brand-primary">Section #{idx + 1}</span>
+                        {learningFormData.sections.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSection(idx)}
+                            className="text-xs text-red-400 hover:text-red-300 font-medium flex items-center"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mr-1" /> Remove Section
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={sec.heading}
+                        onChange={(e) => handleSectionChange(idx, 'heading', e.target.value)}
+                        placeholder="Section Heading"
+                        className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-secondary focus:border-brand-primary focus:outline-none font-bold"
+                      />
+                      <textarea
+                        rows={3}
+                        value={sec.content}
+                        onChange={(e) => handleSectionChange(idx, 'content', e.target.value)}
+                        placeholder="Section Content paragraphs..."
+                        className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-secondary focus:border-brand-primary focus:outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center space-x-3 pt-2 border-t border-brand-border/60">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={learningFormData.isPublished}
+                      onChange={(e) => setLearningFormData((prev) => ({ ...prev, isPublished: e.target.checked }))}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-stone-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span className="ml-3 text-xs font-bold text-brand-secondary">Publish Immediately (Visible in Learning Hub)</span>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-brand-border/60">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setLearningModalOpen(false)}
+                    className="text-xs"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={learningSubmitting}
+                    className="text-xs font-bold shadow-md"
+                  >
+                    {learningSubmitting ? 'Saving...' : editingLearning ? 'Update Resource' : 'Create Resource'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 };
