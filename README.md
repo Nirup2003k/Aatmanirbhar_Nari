@@ -37,6 +37,7 @@ The **Aatmanirbhar Nari** portal bridges the digital gap between women home entr
 - **Inquiry Processing Workflow**: Inquiry inbox allowing entrepreneurs to accept, reject, or mark inquiries as completed.
 - **Order Processing Workflow**: Enforced state transition model for entrepreneurs to move orders through preparation and fulfillment stages.
 - **Business Verification Workflow**: Two-step verification process where entrepreneurs submit verification details and administrators review and mark them as `APPROVED` or `REJECTED`.
+- **Promote My Business Marketing Tool**: Entrepreneur marketing hub to generate ready-to-share promotional messages and preview shareable profile cards across local messaging channels.
 - **Admin Management Dashboard**: Dedicated dashboard containing platform overview statistics, user lists, business listings, verification decision tools, and order/inquiry logs.
 - **Role-Based Protected Navigation**: Route guards (`ProtectedRoute`) and context-driven header/navigation menus tailored to unauthenticated visitors, customers, entrepreneurs, and admins.
 

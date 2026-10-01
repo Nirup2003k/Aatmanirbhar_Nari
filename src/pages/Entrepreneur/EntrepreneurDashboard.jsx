@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import {
   Building2,
   Plus,
@@ -19,6 +19,10 @@ import {
   RefreshCw,
   MapPin,
   User,
+  Share2,
+  Copy,
+  ExternalLink,
+  ShieldCheck,
 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import SmoothInput from '../../components/common/SmoothInput';
@@ -43,7 +47,7 @@ const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'S
 const EntrepreneurDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
-  const validTabs = ['details', 'services', 'availability', 'inquiries', 'orders'];
+  const validTabs = ['details', 'services', 'availability', 'inquiries', 'orders', 'promote'];
   const activeTab = validTabs.includes(urlTab) ? urlTab : 'details';
 
   const setActiveTab = (tabName) => {
@@ -198,6 +202,80 @@ const EntrepreneurDashboard = () => {
   const showErrorNotice = (msg) => {
     setActionError(msg);
     setActionSuccess('');
+  };
+
+  // --- PROMOTE MY BUSINESS HANDLERS ---
+  const generatePromotionalMessage = useCallback((biz) => {
+    if (!biz) return '';
+    const name = biz.businessName || 'My Business';
+    const category = biz.category ? ` (${biz.category})` : '';
+    const desc = biz.description ? `\n${biz.description}` : '';
+    const location = biz.location || biz.serviceArea ? `\n📍 Location: ${biz.location || biz.serviceArea}` : '';
+    const phone = biz.owner?.phone || biz.phone ? `\n📞 Contact: ${biz.owner?.phone || biz.phone}` : '';
+    
+    let servicesList = '';
+    if (Array.isArray(biz.services) && biz.services.length > 0) {
+      const topServices = biz.services.slice(0, 4);
+      servicesList = '\n\n✨ Services Offered:\n' + topServices.map((s) => `• ${s.name}${s.price ? ` (${s.price})` : ''}`).join('\n');
+    }
+
+    const url = `${window.location.origin}/businesses/${biz.id}`;
+    return `🌟 ${name}${category} on Aatmanirbhar Nari!${desc}${location}${phone}${servicesList}\n\n👉 View profile & order directly: ${url}`;
+  }, []);
+
+  const handleCopyMessage = () => {
+    if (!business) return;
+    const msg = generatePromotionalMessage(business);
+    navigator.clipboard.writeText(msg);
+    showSuccessNotice('Promotional message copied to clipboard!');
+  };
+
+  const handleCopyLink = () => {
+    if (!business) return;
+    const url = `${window.location.origin}/businesses/${business.id}`;
+    navigator.clipboard.writeText(url);
+    showSuccessNotice('Business link copied to clipboard!');
+  };
+
+  const handleShareMessage = async () => {
+    if (!business) return;
+    const msg = generatePromotionalMessage(business);
+    const url = `${window.location.origin}/businesses/${business.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: business.businessName,
+          text: msg,
+          url: url,
+        });
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          handleCopyMessage();
+        }
+      }
+    } else {
+      handleCopyMessage();
+    }
+  };
+
+  const handleShareLink = async () => {
+    if (!business) return;
+    const url = `${window.location.origin}/businesses/${business.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: business.businessName,
+          text: `Check out ${business.businessName} on Aatmanirbhar Nari!`,
+          url: url,
+        });
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          handleCopyLink();
+        }
+      }
+    } else {
+      handleCopyLink();
+    }
   };
 
   // --- BUSINESS DETAILS HANDLERS ---
@@ -685,6 +763,20 @@ const EntrepreneurDashboard = () => {
               >
                 <Package className="w-4 h-4 mr-2" />
                 Customer Orders {orders.length > 0 ? `(${activeOrdersCount})` : ''}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('promote')}
+                aria-current={activeTab === 'promote' ? 'page' : undefined}
+                className={`pb-3 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center cursor-pointer ${
+                  activeTab === 'promote'
+                    ? 'border-brand-primary text-brand-primary'
+                    : 'border-transparent text-brand-muted hover:text-brand-secondary'
+                }`}
+              >
+                <Share2 className="w-4 h-4 mr-2 text-brand-primary" />
+                Promote My Business
               </button>
             </nav>
 
@@ -1300,6 +1392,174 @@ const EntrepreneurDashboard = () => {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* TAB 6: PROMOTE MY BUSINESS */}
+            {activeTab === 'promote' && (
+              <div className="space-y-8">
+                <div className="bg-brand-surface border border-brand-border rounded-xl p-6 sm:p-8 shadow-sm space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-brand-border">
+                    <div>
+                      <h2 className="text-xl font-bold text-brand-secondary flex items-center">
+                        <Share2 className="w-5 h-5 text-brand-primary mr-2" />
+                        Promote My Business
+                      </h2>
+                      <p className="text-xs text-brand-muted mt-0.5">
+                        Share your business profile and services across your local network.
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Link
+                        to={`/businesses/${business.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/20 px-3 py-2 rounded-lg transition-colors"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                        View Public Profile
+                      </Link>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Promotional Message Column */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-brand-secondary uppercase tracking-wider">
+                          Ready-to-Share Promotional Message
+                        </h3>
+                        <span className="text-xs text-brand-muted">Auto-generated</span>
+                      </div>
+
+                      <div className="bg-brand-background border border-brand-border rounded-xl p-4 text-xs font-mono text-brand-text whitespace-pre-wrap leading-relaxed relative">
+                        {generatePromotionalMessage(business)}
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={handleShareMessage}
+                          className="text-xs font-bold flex items-center cursor-pointer"
+                        >
+                          <Share2 className="w-3.5 h-3.5 mr-1.5" />
+                          Share Message
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCopyMessage}
+                          className="text-xs font-bold flex items-center cursor-pointer"
+                        >
+                          <Copy className="w-3.5 h-3.5 mr-1.5" />
+                          Copy Message
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Promotion Card Preview Column */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-brand-secondary uppercase tracking-wider">
+                          Promotion Card Preview
+                        </h3>
+                        <span className="text-xs text-brand-muted">Public Card View</span>
+                      </div>
+
+                      {/* Card Component */}
+                      <div className="bg-gradient-to-br from-[#121622] to-[#181e2e] border border-[#262f44] rounded-2xl p-6 shadow-md space-y-4 relative overflow-hidden">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <span className="text-[11px] font-bold text-[#c5a059] uppercase tracking-wider block mb-1">
+                              {business.category || 'Local Business'}
+                            </span>
+                            <h4 className="text-xl font-extrabold text-stone-100">
+                              {business.businessName}
+                            </h4>
+                          </div>
+                          {business.verificationStatus === 'APPROVED' && (
+                            <span className="inline-flex items-center text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-1 rounded-full flex-shrink-0">
+                              <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-400" />
+                              Verified
+                            </span>
+                          )}
+                        </div>
+
+                        {business.description && (
+                          <p className="text-xs text-stone-300 leading-relaxed line-clamp-3">
+                            {business.description}
+                          </p>
+                        )}
+
+                        {(business.location || business.serviceArea) && (
+                          <div className="flex items-center text-xs text-stone-400 font-medium">
+                            <MapPin className="w-3.5 h-3.5 text-[#c5a059] mr-1.5 flex-shrink-0" />
+                            <span className="truncate">{business.location || business.serviceArea}</span>
+                          </div>
+                        )}
+
+                        {Array.isArray(business.services) && business.services.length > 0 && (
+                          <div className="pt-3 border-t border-[#232c3f] space-y-1.5">
+                            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                              Top Services Offered:
+                            </span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {business.services.slice(0, 4).map((s, idx) => (
+                                <div key={idx} className="bg-[#192030] border border-[#2a3449] rounded-lg p-2 flex justify-between items-center text-xs">
+                                  <span className="font-semibold text-stone-200 truncate">{s.name}</span>
+                                  {s.price && <span className="font-bold text-[#c5a059] ml-1 text-[11px]">{s.price}</span>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {(business.owner?.phone || business.phone) && (
+                          <div className="flex items-center text-xs text-stone-300 font-medium pt-2 border-t border-[#232c3f]">
+                            <Phone className="w-3.5 h-3.5 text-brand-primary mr-1.5 flex-shrink-0" />
+                            <span>Contact: {business.owner?.phone || business.phone}</span>
+                          </div>
+                        )}
+
+                        <div className="pt-2 flex items-center justify-between text-xs">
+                          <span className="text-stone-400 font-mono text-[11px]">
+                            {window.location.origin}/businesses/{business.id}
+                          </span>
+                          <Link
+                            to={`/businesses/${business.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-bold text-[#c5a059] hover:underline inline-flex items-center"
+                          >
+                            View Profile <ExternalLink className="w-3 h-3 ml-1" />
+                          </Link>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3 pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleShareLink}
+                          className="text-xs font-bold flex items-center cursor-pointer"
+                        >
+                          <Share2 className="w-3.5 h-3.5 mr-1.5" />
+                          Share Business
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCopyLink}
+                          className="text-xs font-bold flex items-center cursor-pointer"
+                        >
+                          <Copy className="w-3.5 h-3.5 mr-1.5" />
+                          Copy Business Link
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>

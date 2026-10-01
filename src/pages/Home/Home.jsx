@@ -2,11 +2,9 @@ import React from 'react';
 import Hero from './sections/Hero';
 import Categories from './sections/Categories';
 import FeaturedBusinesses from './sections/FeaturedBusinesses';
-import ValueStrip from './sections/ValueStrip';
 import HowItWorks from './sections/HowItWorks';
 import EntrepreneurCTA from './sections/EntrepreneurCTA';
 import LearningResources from './sections/LearningResources';
-import FinalCTA from './sections/FinalCTA';
 import { useAuth } from '../../context/AuthContext';
 
 const Home = () => {
@@ -22,11 +20,9 @@ const Home = () => {
       <Hero />
       <Categories />
       <FeaturedBusinesses />
-      <ValueStrip />
       <HowItWorks />
       <EntrepreneurCTA />
       {showLearning && <LearningResources />}
-      <FinalCTA />
     </div>
   );
 };
