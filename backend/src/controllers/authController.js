@@ -13,10 +13,15 @@ const getJwtSecret = () => {
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 
 const setAuthCookie = (res, token) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const sameSite = process.env.COOKIE_SAMESITE || 'lax';
+  const isCrossSite = String(sameSite).toLowerCase() === 'none';
+
   res.cookie('auth_token', token, {
     httpOnly: true,
-    sameSite: process.env.COOKIE_SAMESITE || 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: sameSite,
+    secure: isProduction || isCrossSite,
+    partitioned: isProduction || isCrossSite,
     maxAge: 3600000, // 1 hour in ms
     path: '/',
   });
@@ -197,7 +202,17 @@ const login = async (req, res, next) => {
 };
 
 const logout = (req, res) => {
-  res.clearCookie('auth_token', { path: '/' });
+  const isProduction = process.env.NODE_ENV === 'production';
+  const sameSite = process.env.COOKIE_SAMESITE || 'lax';
+  const isCrossSite = String(sameSite).toLowerCase() === 'none';
+
+  res.clearCookie('auth_token', {
+    httpOnly: true,
+    sameSite: sameSite,
+    secure: isProduction || isCrossSite,
+    partitioned: isProduction || isCrossSite,
+    path: '/',
+  });
   return res.status(200).json({
     success: true,
     message: 'Logged out successfully',
