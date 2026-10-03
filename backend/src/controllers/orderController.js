@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const { notifyUser } = require('../services/realtimeService');
 
 const parseServicePrice = (priceStr) => {
   if (typeof priceStr === 'number') return priceStr;
@@ -155,6 +156,19 @@ const createOrder = async (req, res, next) => {
         },
       });
     });
+
+    if (business && business.ownerId) {
+      notifyUser(business.ownerId, 'NEW_ORDER', {
+        orderId: order.id,
+        businessId: order.businessId,
+        businessName: order.business?.businessName,
+        customerName: order.customerName,
+        totalAmount: order.totalAmount,
+        status: order.status,
+        createdAt: order.createdAt,
+        order: order,
+      });
+    }
 
     return res.status(201).json({
       success: true,
@@ -324,6 +338,24 @@ const cancelOrder = async (req, res, next) => {
         },
       },
     });
+
+    try {
+      const businessRecord = await prisma.business.findUnique({
+        where: { id: updatedOrder.businessId },
+        select: { ownerId: true },
+      });
+      if (businessRecord && businessRecord.ownerId) {
+        notifyUser(businessRecord.ownerId, 'ORDER_STATUS_UPDATED', {
+          orderId: updatedOrder.id,
+          businessId: updatedOrder.businessId,
+          status: updatedOrder.status,
+          updatedAt: new Date().toISOString(),
+          order: updatedOrder,
+        });
+      }
+    } catch {
+      // Ignore notification errors
+    }
 
     return res.status(200).json({
       success: true,

@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const { notifyUser } = require('../services/realtimeService');
 
 const getEntrepreneurBusinesses = async (req, res, next) => {
   try {
@@ -284,6 +285,17 @@ const updateOrderStatus = async (req, res, next) => {
         },
       },
     });
+
+    if (updatedOrder && updatedOrder.customer && updatedOrder.customer.id) {
+      notifyUser(updatedOrder.customer.id, 'ORDER_STATUS_UPDATED', {
+        orderId: updatedOrder.id,
+        businessId: updatedOrder.businessId,
+        businessName: updatedOrder.business?.businessName,
+        status: updatedOrder.status,
+        updatedAt: new Date().toISOString(),
+        order: updatedOrder,
+      });
+    }
 
     return res.status(200).json({
       success: true,

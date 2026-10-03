@@ -4,6 +4,7 @@ import { ArrowLeft, Store, MapPin, CheckCircle2, AlertCircle, XCircle, Ban, Load
 import { getCustomerOrderById, cancelOrder } from '../../services/api';
 import { renderStatusBadge } from './MyOrders';
 import Button from '../../components/common/Button';
+import { useRealtime } from '../../context/RealtimeContext';
 
 const STATUS_STEPS = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY', 'COMPLETED'];
 
@@ -38,6 +39,23 @@ const OrderDetails = () => {
   useEffect(() => {
     fetchOrder();
   }, [fetchOrder]);
+
+  const { subscribeToEvents } = useRealtime();
+
+  useEffect(() => {
+    const unsubscribe = subscribeToEvents((eventPayload) => {
+      if (
+        eventPayload.event === 'ORDER_STATUS_UPDATED' &&
+        String(eventPayload.data.orderId) === String(id)
+      ) {
+        setOrder((prev) =>
+          prev ? { ...prev, status: eventPayload.data.status } : prev
+        );
+        setSuccessMsg(`Live Update: Order status changed to ${eventPayload.data.status}`);
+      }
+    });
+    return unsubscribe;
+  }, [subscribeToEvents, id]);
 
   const handleCancelOrder = async () => {
     if (!id) return;

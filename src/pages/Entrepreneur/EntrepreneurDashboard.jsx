@@ -41,6 +41,7 @@ import {
 } from '../../services/api';
 import { CATEGORY_NAMES as CATEGORIES } from '../../constants/categories';
 import { getCategoryGuidance } from '../../constants/verificationGuidance';
+import { useRealtime } from '../../context/RealtimeContext';
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -158,6 +159,17 @@ const EntrepreneurDashboard = () => {
       fetchOrders();
     }
   }, [activeTab, fetchOrders]);
+
+  const { subscribeToEvents } = useRealtime();
+
+  useEffect(() => {
+    const unsubscribe = subscribeToEvents((eventPayload) => {
+      if (eventPayload.event === 'NEW_ORDER' || eventPayload.event === 'ORDER_STATUS_UPDATED') {
+        fetchOrders();
+      }
+    });
+    return unsubscribe;
+  }, [subscribeToEvents, fetchOrders]);
 
   // Sync business data into form states when business changes
   useEffect(() => {

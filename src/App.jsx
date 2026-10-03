@@ -1,6 +1,7 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { RealtimeProvider } from './context/RealtimeContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/navbar/Navbar';
 import Footer from './components/footer/Footer';
@@ -71,73 +72,75 @@ const PageLoader = () => (
 const App = () => {
   return (
     <AuthProvider>
-      <CartProvider>
-        <Router>
-          <ScrollToAnchor />
-          <div className="flex flex-col min-h-screen font-sans">
-            <Navbar />
-            <main className="flex-grow">
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/businesses" element={<Businesses />} />
-                  <Route path="/businesses/:id" element={<BusinessDetails />} />
-                  <Route path="/learning" element={<LearningHub />} />
-                  <Route path="/learning/:id" element={<LearningArticle />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/auth/login" element={<Login />} />
-                  <Route path="/auth/register" element={<Register />} />
-                  <Route
-                    path="/checkout"
-                    element={
-                      <ProtectedRoute allowedRoles={['CUSTOMER']}>
-                        <Checkout />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/orders"
-                    element={
-                      <ProtectedRoute allowedRoles={['CUSTOMER']}>
-                        <MyOrders />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/orders/:id"
-                    element={
-                      <ProtectedRoute allowedRoles={['CUSTOMER']}>
-                        <OrderDetails />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/entrepreneur/dashboard"
-                    element={
-                      <ProtectedRoute allowedRoles={['ENTREPRENEUR']}>
-                        <EntrepreneurDashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin/dashboard"
-                    element={
-                      <ProtectedRoute allowedRoles={['ADMIN']}>
-                        <AdminDashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </Suspense>
-            </main>
-            <Footer />
-          </div>
-        </Router>
-      </CartProvider>
+      <RealtimeProvider>
+        <CartProvider>
+          <Router>
+            <ScrollToAnchor />
+            <div className="flex flex-col min-h-screen font-sans">
+              <Navbar />
+              <main className="flex-grow">
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/businesses" element={<Businesses />} />
+                    <Route path="/businesses/:id" element={<BusinessDetails />} />
+                    <Route path="/learning" element={<LearningHub />} />
+                    <Route path="/learning/:id" element={<LearningArticle />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/auth/login" element={<Login />} />
+                    <Route path="/auth/register" element={<Register />} />
+                    <Route
+                      path="/checkout"
+                      element={
+                        <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                          <Checkout />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/orders"
+                      element={
+                        <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                          <MyOrders />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/orders/:id"
+                      element={
+                        <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                          <OrderDetails />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/entrepreneur/dashboard"
+                      element={
+                        <ProtectedRoute allowedRoles={['ENTREPRENEUR']}>
+                          <EntrepreneurDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/dashboard"
+                      element={
+                        <ProtectedRoute allowedRoles={['ADMIN']}>
+                          <AdminDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
+                </Suspense>
+              </main>
+              <Footer />
+            </div>
+          </Router>
+        </CartProvider>
+      </RealtimeProvider>
     </AuthProvider>
   );
 };

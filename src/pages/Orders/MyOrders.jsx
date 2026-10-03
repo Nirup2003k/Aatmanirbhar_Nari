@@ -4,6 +4,7 @@ import { Package, Clock, Store, ChevronRight, AlertCircle, AlertTriangle } from 
 import { getCustomerOrders } from '../../services/api';
 import Button from '../../components/common/Button';
 import ReportModal from '../../components/common/ReportModal';
+import { useRealtime } from '../../context/RealtimeContext';
 
 export const renderStatusBadge = (status) => {
   switch (status) {
@@ -83,6 +84,20 @@ const MyOrders = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  const { subscribeToEvents } = useRealtime();
+
+  useEffect(() => {
+    const unsubscribe = subscribeToEvents((eventPayload) => {
+      if (eventPayload.event === 'ORDER_STATUS_UPDATED') {
+        const { orderId, status } = eventPayload.data;
+        setOrders((prevOrders) =>
+          prevOrders.map((o) => (o.id === orderId ? { ...o, status } : o))
+        );
+      }
+    });
+    return unsubscribe;
+  }, [subscribeToEvents]);
 
   if (isLoading) {
     return (
